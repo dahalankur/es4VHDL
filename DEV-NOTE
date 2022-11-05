@@ -1,0 +1,20 @@
+A prerequisite for being able to use this software is that the user must be in
+'es4vhdl' group, and must have run the setup.sh script once to set up all 
+relevant directories.
+
+After running the setup.sh script, an .es4 directory should be created in the 
+home folder of the student with appropriate group (es4vhdl) and permissions + 
+gid bit. 
+
+The webserver also has to be in {es4vhdl,es4vhdl-admin} groups. The students'
+files are safe as long as they do not try to create files directly on the server
+without using the web UI. This can mess up permissions, preventing the server
+from reading the contents of their file. To tackle this, we might provide a 
+'fixdir' script that will recursively fix all permissions of the users, starting
+at the .es4 directory. To prevent issues like these, students are discouraged
+from creating files directly on the vm; they must use the web UI instead.
+
+On the web UI, a create directory button will correspond to 
+"mkdir -p $es4_dir/project1 && chmod -R 2775 $es4_dir/project1" command which 
+will automatically set the relevant permissions so the web server can read/write
+the files in their directories. 
