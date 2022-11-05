@@ -18,3 +18,6 @@ On the web UI, a create directory button will correspond to
 "mkdir -p $es4_dir/project1 && chmod -R 2775 $es4_dir/project1" command which 
 will automatically set the relevant permissions so the web server can read/write
 the files in their directories. 
+
+One issue: how to make .htaccess work while serving webpages with Flask and gunicorn?
+Install flask_htpasswd using pip3 install --user flask_htpasswd
