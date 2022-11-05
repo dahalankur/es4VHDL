@@ -1,2 +1,4 @@
 # ignore private NOTES related to infrastructure
 INFRA-NOTE
+
+__pycache__
