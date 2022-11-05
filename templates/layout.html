@@ -4,7 +4,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <head>
-<script src="//use.edgefonts.net/open-sans:n3,n4,n7;crimson-text:n4,i4.js"></script>
 <link rel="stylesheet" href="/static/style.css" />
 
 {% block scripts %}
@@ -19,6 +18,10 @@
         </div>
     </div>
 
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="alert alert-{{category}}">Error: {{ message }}</div>
+    {% endfor %}
+    
     <div id="content">
         {% block content %}
         {% endblock %}

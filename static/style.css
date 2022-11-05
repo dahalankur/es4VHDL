@@ -12,23 +12,44 @@
     border: 1px solid black;
     padding: 5px;
     margin: 5px;
+    resize: vertical;
+    overflow: scroll;
 }
 .resize {
     resize: horizontal;
     width: 30%;
-    height: auto;
+    /* TODO: update default height to 1000 for default use case */
+    height: 75%;
     /* border, red, solid */
-    border: 1px solid red;
     padding: 5px;
     margin: 5px;
 }
+
+.alert {
+  padding: 12px;
+  border-radius: 3px;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.alert-error {
+  border-color: darkred;
+  background-color: red;
+  color: white;
+}
+
+.alert-info {
+  border-color: orange;
+  background-color: yellow;
+  color: black;
+}
+
 .ide {
     /* width should fill the rest of the space */
     width: 100%;
-    /* TODO: update default height to 1000 for default use case */
-    height: auto;
-    resize: vertical;
-    overflow: scroll;
+    height: 600px;
     /* border, blue, solid */
     border: 1px solid blue;
     padding: 5px;

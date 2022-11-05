@@ -1,23 +1,24 @@
 {% extends "layout.html" %}
 
-
-
 {% block content %}
 <!-- TODO: show flashed message somewhere!!! -->
 <!-- TODO: add directory icons besides directories, and file icons besides files in the tree! -->
 <script>
-    async function new_project() {
+    var most_recent_project = null;
+    function new_project() {
         var name = ""
         while (name.trim() == "") {
             name = prompt("Please provide a Project Name");
         }
-        await fetch('/new_project?' + new URLSearchParams({
-            projname : name.trim()
-        })).then(window.location='/')
+        console.log("project = ", name)
+        fetch('/new_project?' + new URLSearchParams({
+            projname: name.trim()
+        }))
+        // .then(window.location.reload())
     }
 
     function new_file() {
-        
+        alert("The most recently clicked project is ", most_recent_project)
     }
 
     function synthesize() {
@@ -25,7 +26,7 @@
     }
 </script>
 
-<title>Home</title>
+<!-- <title>Home</title> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -44,21 +45,21 @@
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
             <ul id="myUL">
-            <h1>{{ tree.name }}</h1>
-            <ul>
-                {%- for item in tree.children recursive %}
-                <li> <span class="caret">{{ item.name }} </span>
-                    {%- if item.children -%}
-                    <ul class="nested">{{ loop(item.children) }}</ul>
-                    {%- endif %}
-                </li>
-                {%- endfor %}
+                <h1>{{ tree.name }}</h1>
+                <ul>
+                    {%- for item in tree.children recursive %}
+                    <li> <span class="caret" data-pathname="{{ item.path }}">{{ item.name }}</span>
+                        {%- if item.children -%}
+                        <ul class="nested">{{ loop(item.children) }}</ul>
+                        {%- endif %}
+                    </li>
+                    {%- endfor %}
+                </ul>
             </ul>
-        </ul>
             <!-- Directory tree ends -->
         </div>
         <!-- the text editor -->
-        <div class="ide" id="editor">IEEE;
+        <div class="ide" id="editor"> {{ file_contents }}
         </div>
         <script>
             var editor = ace.edit("editor");
@@ -79,15 +80,38 @@
 <script>
     var toggler = document.getElementsByClassName("caret");
     var i;
-    
+    // TODO: keep track of the most recently clicked project (and possible highlight it) in the most_recent_project variable
     for (i = 0; i < toggler.length; i++) {
-      toggler[i].addEventListener("click", function() {
-        this.parentElement.querySelector(".nested").classList.toggle("active");
-        this.classList.toggle("caret-down");
-        alert("Button" + this.innerHTML + " has been clicked");
-      });
-    }
-    </script>
+        toggler[i].addEventListener("click", function () {
+            // The line below has an error
+            parent = this.parentElement;
 
+            nested = parent.querySelector(".nested");
+            console.log("Checking if null");
+            if (nested == null) {
+                editor = document.getElementById("editor");
+                pathname = this.getAttribute("data-pathname");
+                console.log("PATHNAME = ", pathname);
+                if (pathname != "" && pathname != null) {
+                    target = '/get_file?' + new URLSearchParams({ filename: pathname })
+                    fetch(target, {
+                        method: 'GET'
+                    })
+                        .then(function (response) { return response.json(); })
+                        .then(function (json) {
+                            editor = ace.edit("editor");
+                            editor.session.setTabSize(4);
+                            editor.setValue(json.contents, -1);
+                        });
+                    }
+                } else {
+                    nested.classList.toggle("active");
+                    this.classList.toggle("caret-down");
+                }
+                /* Make a get request to the backend for the file contents */
+                /* Set the editor contents to the file contents */
+            });
+    }
+</script>
 
 {% endblock %}
