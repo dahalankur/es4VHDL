@@ -1,0 +1,59 @@
+<html>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<head>
+<script src="//use.edgefonts.net/open-sans:n3,n4,n7;crimson-text:n4,i4.js"></script>
+<link rel="stylesheet" href="/static/style.css" />
+{% if config['BUILD'] != "production" %}
+<link rel="stylesheet" href="/static/betastyle.css" />
+{% endif %}
+
+{% block scripts %}
+{% endblock %}
+
+</head>
+
+<body>
+    <div id="navbar-container">
+        <div id="navbar">
+            <a href="/" style="text-decoration: none;">
+                <span class="header">
+                    <img src="/static/icons/icon-vector.svg" id="logo" align="left" style="padding-right: 10px; padding-top: 7px;
+                        width: 60px; height: 60px">
+                    VHDLweb
+                    {% if config['BUILD'] != "production" %}
+                    - {{ config['BUILD'] }}
+                    {% endif %}
+                </span>
+            </a>
+
+            <span class="login">
+                {% if 'username' in session %}
+                    {{ session['username'] }}<br/>
+                    <a href="/logout">log out</a>
+                {% else %}
+                    <a href="/login">log in</a>
+                {% endif %}
+            </span>
+
+            <br/>
+
+            <a href="/assignments">problems</a> | <a href="/reference">reference</a>
+        </div>
+    </div>
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <div id="footer-container">
+        <div id="footer">
+            Capstone Project - Team Green-Blue<br/>
+            es4vhdl.com &copy; 2022 <a href="http://stevenbell.me">Steven Bell</a>
+        </div>
+    </div>
+</body>
+</html>
