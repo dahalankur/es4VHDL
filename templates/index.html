@@ -1,20 +1,93 @@
 {% extends "layout.html" %}
 
+
+
 {% block content %}
+<!-- TODO: show flashed message somewhere!!! -->
+<!-- TODO: add directory icons besides directories, and file icons besides files in the tree! -->
+<script>
+    async function new_project() {
+        var name = ""
+        while (name.trim() == "") {
+            name = prompt("Please provide a Project Name");
+        }
+        await fetch('/new_project?' + new URLSearchParams({
+            projname : name.trim()
+        })).then(window.location='/')
+    }
 
-<!-- Directory tree begins -->
-<h1>{{ tree.name }}</h1>
-<ul>
-{%- for item in tree.children recursive %}
-    <li>{{ item.name }}
-    {%- if item.children -%}
-        <ul>{{ loop(item.children) }}</ul>
-    {%- endif %}</li>
-{%- endfor %}
-</ul>
-<!-- Directory tree ends -->
+    function new_file() {
+        
+    }
+
+    function synthesize() {
+
+    }
+</script>
+
+<title>Home</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
+    integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<div>
+    <div class="top-bar">
+        <button id="New_Project" onclick="new_project()">New Project</button>
+        <button id="New_File" onclick="new_file()">New File</button>
+        <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
+        <button id="Synthesize" onclick="synthesize_project()"> Synthesize project</button>
 
 
+        <button> Button 3</button>
+    </div>
+    <div class="bottom-box">
+        <!-- the resizabel file tree  -->
+        <div class="resize" id="filetree">
+            <!-- Directory tree begins -->
+            <ul id="myUL">
+            <h1>{{ tree.name }}</h1>
+            <ul>
+                {%- for item in tree.children recursive %}
+                <li> <span class="caret">{{ item.name }} </span>
+                    {%- if item.children -%}
+                    <ul class="nested">{{ loop(item.children) }}</ul>
+                    {%- endif %}
+                </li>
+                {%- endfor %}
+            </ul>
+        </ul>
+            <!-- Directory tree ends -->
+        </div>
+        <!-- the text editor -->
+        <div class="ide" id="editor">IEEE;
+        </div>
+        <script>
+            var editor = ace.edit("editor");
+            editor.session.setMode("ace/mode/vhdl");
+        </script>
+
+    </div>
+    <!-- This is where the output messages would appear, if any.
+        Such as "Line 25: unknown variable 'TODO'"-->
+    <div id="output_window">
+        Error: Degree audit failed
+    </div>
+
+
+</div>
+
+
+<script>
+    var toggler = document.getElementsByClassName("caret");
+    var i;
+    
+    for (i = 0; i < toggler.length; i++) {
+      toggler[i].addEventListener("click", function() {
+        this.parentElement.querySelector(".nested").classList.toggle("active");
+        this.classList.toggle("caret-down");
+        alert("Button" + this.innerHTML + " has been clicked");
+      });
+    }
+    </script>
 
 
 {% endblock %}

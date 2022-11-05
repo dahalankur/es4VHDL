@@ -1,0 +1,80 @@
+.top-bar {
+    color: lightblue;
+    flex-direction: row;
+}
+.bottom-box {
+    /* background color green */
+    background-color: rgb(201, 205, 253);
+    /* flexbox */
+    display: flex;
+    flex-direction: row; 
+    /* add a solid border, black */
+    border: 1px solid black;
+    padding: 5px;
+    margin: 5px;
+}
+.resize {
+    resize: horizontal;
+    width: 30%;
+    height: auto;
+    /* border, red, solid */
+    border: 1px solid red;
+    padding: 5px;
+    margin: 5px;
+}
+.ide {
+    /* width should fill the rest of the space */
+    width: 100%;
+    /* TODO: update default height to 1000 for default use case */
+    height: auto;
+    resize: vertical;
+    overflow: scroll;
+    /* border, blue, solid */
+    border: 1px solid blue;
+    padding: 5px;
+    margin: 5px;
+}
+
+.output_window {
+    height: auto;
+    color: red;
+}
+
+.file-tree-file {
+    list-style-type: "-->"
+}
+
+/* Below is taken from this tutorial on drop downs */
+
+/* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_treeview */
+
+.caret {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+  }
+  
+  .caret::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  
+  .caret-down::before {
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari */'
+    transform: rotate(90deg);  
+  }
+  
+  .nested {
+    display: none;
+  }
+  
+  .active {
+    display: block;
+  }
+
+  /* End taken from tutorial  */
