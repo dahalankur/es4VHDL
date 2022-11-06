@@ -45,10 +45,12 @@
   background-color: yellow;
   color: black;
 }
-
+.name-and-ide-box {
+    width: 100%;
+}
 .ide {
     /* width should fill the rest of the space */
-    width: 100%;
+    width: auto;
     height: 600px;
     /* border, blue, solid */
     border: 1px solid blue;
@@ -56,11 +58,18 @@
     margin: 5px;
 }
 
+.filename {
+    padding: 5px;
+    margin: 5px;
+    border: solid gray 1px;
+    border-radius: 5px;
+    background-color: aliceblue;
+}
+
 .output_window {
     height: auto;
     color: red;
 }
-
 .file-tree-file {
     list-style-type: "";
 }

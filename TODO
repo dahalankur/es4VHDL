@@ -1,0 +1,22 @@
+hi
+
+-> show filename at the top of the editor, and like vscode, a circle appears if the file has NOT been saved after an edit. if it has, it disappears. note that cmd S works to save now!!
+-> flash messages appearing (OR create our own flashing system)
+-> fix reload issue! New project should automatically add to the DOM.
+-> Compile code 
+-> Synthesize a project
+-> netlist viewer (new tab?)
+-> Format the output window for errors (Scrollable, unintrusive when no errors)
+-> Warning when switching files (did you save?)
+-> indicate where the new file/dir is being created (like vscode)
+    -> -> New file button
+       -> New folder button
+    -> Correlate between current location, and the files (a lot of these need this to be solved.)
+-> Download the bitstream to device
+
+
+// Not important (TODO later)
+-> Choose colors for the background
+-> Make the file tree pretty
+-> UX improvements
+-> Save files to local computer (download full tree, later task. ZIP file)

@@ -2,25 +2,19 @@ from flask import Flask, render_template, request, flash, redirect, url_for, jso
 from flask_htpasswd import HtPasswdAuth
 import os
 
-
 default_msg = '''
 Welcome to ES4 VHDL online editor!
 
 Begin by creating a new project, or selecting an existing one!
 '''
 
+# TODO: create a separate config file for all flask configs
 app = Flask(__name__)
 app.config['FLASK_HTPASSWD_PATH'] = '.htpasswd'
 app.config['SECRET_KEY'] = os.urandom(16)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 htpasswd = HtPasswdAuth(app)
-
-# @app.route('/')
-# @htpasswd.required
-# def index(user):
-#     print(f"{user} has successfully logged in")
-#     return render_template('index.html')
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -43,7 +37,6 @@ def make_tree(path):
 # TODO: Update the size of the file tree and the editor window to be correct.
 
 
-
 @app.route('/new_project', methods = ['GET'])
 @htpasswd.required
 def new_project(user):
@@ -61,6 +54,7 @@ def new_project(user):
         flash('The project already exists', 'error')
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
 
 # https://gist.github.com/andik/e86a7007c2af97e50fbb
 @app.route('/')
@@ -80,6 +74,7 @@ def get_file(user):
         }
     return jsonify(data)
 
+
 @app.route('/save_file', methods=["POST", "GET"])
 @htpasswd.required
 def save_file(user):
@@ -92,7 +87,6 @@ def save_file(user):
             file.write(body["file_contents"])
     
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
-
 
 
 if __name__=="__main__":

@@ -10,11 +10,11 @@
         while (name.trim() == "") {
             name = prompt("Please provide a Project Name");
         }
-        console.log("project = ", name)
         fetch('/new_project?' + new URLSearchParams({
             projname: name.trim()
         }))
-        // .then(window.location.reload())
+        // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+        // TODO: wait for status 200 from the fetch request. if that is sent, manually add the directory to the directory tree so that on next refresh it will all be sorted?
     }
 
     function new_file() {
@@ -31,9 +31,10 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                "file_contents": file_contents,
-                "current_file": current_file
-            })});
+                    "file_contents": file_contents,
+                    "current_file": current_file
+                })
+            });
         }
         else {
             alert("Please select a file");
@@ -45,7 +46,6 @@
     }
 </script>
 
-<!-- <title>Home</title> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -78,14 +78,18 @@
             </ul>
             <!-- Directory tree ends -->
         </div>
-        <!-- the text editor -->
-        <div class="ide" id="editor"> {{ file_contents }}
+        <div class="name-and-ide-box">
+            
+            <div class="filename" id="filename_container" style="display: none;"><span id="filename_name"></span><span id="save_indicator"></span></div>
+            <!-- the text editor -->
+            
+            <div class="ide" id="editor"> {{ file_contents }}
+            </div>
+            <script>
+                var editor = ace.edit("editor");
+                editor.session.setMode("ace/mode/vhdl");
+            </script>
         </div>
-        <script>
-            var editor = ace.edit("editor");
-            editor.session.setMode("ace/mode/vhdl");
-        </script>
-
     </div>
     <!-- This is where the output messages would appear, if any.
         Such as "Line 25: unknown variable 'TODO'"-->
@@ -103,15 +107,19 @@
     // TODO: keep track of the most recently clicked project (and possible highlight it) in the most_recent_project variable
     for (i = 0; i < toggler.length; i++) {
         toggler[i].addEventListener("click", function () {
-            parent = this.parentElement;
-
-            nested = parent.querySelector(".nested");
-            console.log("Checking if null");
+            nested = this.parentElement.querySelector(".nested");
             if (nested == null) {
                 editor = document.getElementById("editor");
                 pathname = this.getAttribute("data-pathname");
                 current_file = pathname;
+                filename_container_name = document.getElementById("filename_name")
+                if (current_file) filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);
                 if (pathname != "" && pathname != null) {
+                    // view the file name
+                    filename_container = document.getElementById("filename_container");
+                    filename_container.style.display = "block";
+
+                    // get request to backend to receive data to render
                     target = '/get_file?' + new URLSearchParams({ filename: pathname })
                     fetch(target, {
                         method: 'GET'
@@ -123,15 +131,35 @@
                             editor.setValue(json.contents, -1);
                         });
                 }
-                
+
             } else {
                 nested.classList.toggle("active");
                 this.classList.toggle("caret-down");
             }
-            /* Make a get request to the backend for the file contents */
-            /* Set the editor contents to the file contents */
         });
     }
+
+
+    // command S implementation: https://www.thatsoftwaredude.com/content/8783/how-to-ctrl--s-to-save-in-javascript
+    var isCtrl = false;
+    window.addEventListener('load', function () {
+        document.getElementById('editor').addEventListener('keydown', function (e) {
+            if (e.keyCode == 17 || e.keyCode == 91) { // cmd or ctrl
+                e.preventDefault();
+                isCtrl = true;
+            }
+
+            if (e.keyCode == 83 && isCtrl) {
+                e.preventDefault();
+                save_file();
+            }
+        });
+    });
+
+    document.getElementById('editor').addEventListener('keyup', function (e) {
+        e.preventDefault();
+        isCtrl = false;
+    });
 </script>
 
 {% endblock %}
