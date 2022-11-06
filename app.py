@@ -1,8 +1,8 @@
+import os
+import shutil
+# from build_files import 
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
-import os
-import subprocess
-import shutil
 
 default_msg = '''
 Welcome to ES4 VHDL online editor!
@@ -173,7 +173,6 @@ def synthesize_netlist(user):
             return redirect(url_for('index'))
         # TODO: instruct build_files.py to synthesize the file to_synthesize
 
-        
     else:
         flash('No file with the given name exists', 'error')
         return redirect(url_for('index'))
