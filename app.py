@@ -58,7 +58,7 @@ def delete_file(user):
     else:
         flash('No file with the given name exists', 'error')
         return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 @app.route('/delete_folder', methods = ['GET'])
@@ -75,7 +75,7 @@ def delete_folder(user):
     else:
         flash('No directory with the given name exists', 'error')
         return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 @app.route('/new_folder', methods = ['GET'])
@@ -96,7 +96,7 @@ def new_folder(user):
     else:
         flash('The path to the current directory does not exist', 'error')
         return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
  
 
 @app.route('/new_project', methods = ['GET'])
@@ -110,7 +110,7 @@ def new_project(user):
         os.chmod(path=projname, mode=0o2775)
     else:
         flash('The project already exists', 'error')
-        return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 501
+        return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 @app.route('/new_file', methods = ['GET'])
@@ -130,7 +130,7 @@ def new_file(user):
     else:
         flash('The specified folder does not exists', 'error')
         return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 
@@ -164,7 +164,7 @@ def save_file(user):
         # Write the data to the file
         with open(body["current_file"], "w") as file:
             file.write(body["file_contents"])
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 '''

@@ -15,12 +15,17 @@
         })).then(response => {
             if (response.status != 200) {
                 alert("An error occurred while creating the project. Please check that the project you are trying to create does not already exist.")
-            } else { 
-                location.reload(); // refresh on successful response from the backend
+            } else {
+                // status code 200
+                // check if redirected is true
+                // if so, we intended to "flash" an error from the backend
+                if (response.redirected) {
+                    alert("error: something is wrong")
+                } else {
+                    location.reload(); // refresh on successful response from the backend
+                }
             }
         });
-        // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
-        // TODO: wait for status 200 from the fetch request. if that is sent, manually add the directory to the directory tree so that on next refresh it will all be sorted?
     }
 
     function new_file() {
@@ -33,9 +38,21 @@
                 filename: name.trim(),
                 current_dir: current_dir
             }))
-            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+                .then(response => {
+                    if (response.status != 200) {
+                        alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
+                    } else {
+                        // status code 200
+                        // check if redirected is true
+                        // if so, we intended to "flash" an error from the backend
+                        if (response.redirected) {
+                            alert("error: something is wrong")
+                        } else {
+                            location.reload(); // refresh on successful response from the backend
+                        }
+                    }
+                });
 
-            // TODO: this also has the "refresh problem" we had with "New Project"
         } else {
             alert("Please select a parent folder for the new file");
         }
@@ -51,14 +68,26 @@
                 dirname: name.trim(),
                 current_dir: current_dir
             }))
-            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
-
-            // TODO: this also has the "refresh problem" we had with "New Project"
+                .then(response => {
+                    if (response.status != 200) {
+                        alert("An error occurred while creating the folder. Please check that the folder you are trying to create does not already exist.")
+                    } else {
+                        // status code 200
+                        // check if redirected is true
+                        // if so, we intended to "flash" an error from the backend
+                        if (response.redirected) {
+                            alert("error: something is wrong")
+                        } else {
+                            location.reload(); // refresh on successful response from the backend
+                        }
+                    }
+                });
         } else {
             alert("Please select a parent folder for the new folder");
         }
     }
 
+    // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
         if (current_file) {
@@ -68,9 +97,21 @@
             fetch('/delete_file?' + new URLSearchParams({
                 filename: current_file
             }))
-            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+                .then(response => {
+                    if (response.status != 200) {
+                        alert("An error occurred while deleting the file. Please check that the file you are trying to delete exists.")
+                    } else {
+                        // status code 200
+                        // check if redirected is true
+                        // if so, we intended to "flash" an error from the backend
+                        if (response.redirected) {
+                            alert("error: something is wrong")
+                        } else {
+                            location.reload(); // refresh on successful response from the backend
+                        }
+                    }
+                });
             current_file = null;
-            // TODO: this also has the "refresh problem" we had with "New Project"
         }
     }
 
@@ -82,10 +123,22 @@
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
-            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+                .then(response => {
+                    if (response.status != 200) {
+                        alert("An error occurred while deleting the folder. Please check that the folder you are trying to delete exists.")
+                    } else {
+                        // status code 200
+                        // check if redirected is true
+                        // if so, we intended to "flash" an error from the backend
+                        if (response.redirected) {
+                            alert("error: something is wrong")
+                        } else {
+                            location.reload(); // refresh on successful response from the backend
+                        }
+                    }
+                });
             current_dir = null;
             selected_dir = null;
-            // TODO: this also has the "refresh problem" we had with "New Project"
         }
     }
 
