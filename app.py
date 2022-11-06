@@ -4,11 +4,15 @@ from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
 
+# TODO: vulnerability: if the user sends some other path in one of the GET requests, we will currently run the command for another user. We do not want this, so we want 
+# to check that the path being provided is a subdirectory of the user's home directory.
+
 default_msg = '''
 Welcome to ES4 VHDL online editor!
 
 Begin by creating a new project, or selecting an existing one!
 '''
+# TODO: add a link to help/documentation page in default_msg
 
 # TODO: create a separate config file for all flask configs
 app = Flask(__name__)
@@ -74,7 +78,6 @@ def delete_folder(user):
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
 
 
-
 @app.route('/new_folder', methods = ['GET'])
 @htpasswd.required
 def new_folder(user):
@@ -101,14 +104,14 @@ def new_folder(user):
 def new_project(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     projname = path + request.args.get('projname')
-    print(projname)
+
     if not os.path.exists(path=projname):
         os.mkdir(path=projname)
         os.chmod(path=projname, mode=0o2775)
     else:
         flash('The project already exists', 'error')
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+        return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 501
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 @app.route('/new_file', methods = ['GET'])
 @htpasswd.required
@@ -139,6 +142,7 @@ def index(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
+# TODO: make a 'log' function instead of print that writes to a log file
 
 @app.route('/get_file', methods=["GET"])
 @htpasswd.required
@@ -175,10 +179,19 @@ def analyze_ghdl_file(user):
         flash("No such file exists")
         return redirect(url_for('index'))
 
-    output = safe_run(["ghdl", "-a", "-fsynopsys", to_analyze], timeout=5).decode("utf-8")
+    # remove work-obj08.cf if it exists
+    if os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf")):
+        os.remove(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
+    
+    # build with ghdl in their directory (to prevent race conditions when multiple users are compiling)
+    output = safe_run(["ghdl", "-a", "-fsynopsys", "--std=08", to_analyze], cwd=os.path.dirname(to_analyze),timeout=5).decode("utf-8")
+    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
+
     data = {
             "output" : output,
+            "success" : build_success
         }
+    
     return jsonify(data)
 
 if __name__=="__main__":

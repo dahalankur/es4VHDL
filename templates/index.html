@@ -12,7 +12,13 @@
         }
         fetch('/new_project?' + new URLSearchParams({
             projname: name.trim()
-        }))
+        })).then(response => {
+            if (response.status != 200) {
+                alert("An error occurred while creating the project. Please check that the project you are trying to create does not already exist.")
+            } else { 
+                location.reload(); // refresh on successful response from the backend
+            }
+        });
         // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
         // TODO: wait for status 200 from the fetch request. if that is sent, manually add the directory to the directory tree so that on next refresh it will all be sorted?
     }
@@ -30,6 +36,8 @@
             // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
 
             // TODO: this also has the "refresh problem" we had with "New Project"
+        } else {
+            alert("Please select a parent folder for the new file");
         }
     }
 
@@ -46,6 +54,8 @@
             // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
 
             // TODO: this also has the "refresh problem" we had with "New Project"
+        } else {
+            alert("Please select a parent folder for the new folder");
         }
     }
 
@@ -95,7 +105,7 @@
             });
         }
         else {
-            alert("Please select a file");
+            alert("Please select a file to save from the directory tree");
         }
     }
 
@@ -108,7 +118,7 @@
                 filename: current_file
             }));
         } else {
-            alert("Please select a file");
+            alert("Please select a file to synthesize from the directory tree");
         }
     }
 
@@ -120,21 +130,21 @@
             fetch('/analyze_ghdl_file?' + new URLSearchParams({
                 filename: current_file
             }))
-            .then(function (response) { return response.json(); })
-                        .then(json => {
-                            output_window = document.getElementById("output_window")
-                            if(json.output.trim() != "") {
-                                output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
-                                output_window.style.border = "1px solid red";
-                            } else {
-                                output_window.style.border = "1px solid green";
-                                output_window.innerHTML = "Output: <pre style=\"color: green\">No errors!</pre>";
-                            }
-                        }), error => {
-                            console.log(error);
-                        };
+                .then(function (response) { return response.json(); })
+                .then(json => {
+                    output_window = document.getElementById("output_window")
+                    if (json.output.trim() != "" && !json.success) {
+                        output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
+                        output_window.style.border = "1px solid red";
+                    } else {
+                        output_window.style.border = "1px solid green";
+                        output_window.innerHTML = "Output: <pre style=\"color: green\">No errors!</pre>";
+                    }
+                }), error => {
+                    console.log(error);
+                };
         } else {
-            alert("Please select a file");
+            alert("Please select a file to analyze from the directory tree");
         }
     }
 </script>
