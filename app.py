@@ -15,6 +15,7 @@ app = Flask(__name__)
 app.config['FLASK_HTPASSWD_PATH'] = '.htpasswd'
 app.config['SECRET_KEY'] = os.urandom(16)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 
 htpasswd = HtPasswdAuth(app)
 
