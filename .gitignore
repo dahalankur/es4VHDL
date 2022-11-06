@@ -3,3 +3,6 @@ INFRA-NOTE
 
 __pycache__
 .htpasswd
+
+# build files
+*.cf
