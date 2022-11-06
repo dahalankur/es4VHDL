@@ -21,7 +21,7 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 def make_tree(path):
-    tree = dict(name=os.path.basename(path), children=[], path="")
+    tree = dict(name=os.path.basename(path), children=[], path="", dirname=path)
     try: lst = os.listdir(path)
     except OSError:
         pass #ignore errors
@@ -31,6 +31,7 @@ def make_tree(path):
             if os.path.isdir(fn):
                 tree['children'].append(make_tree(fn))
             else:
+                # This is not a directory
                 tree['children'].append(dict(name=name, path=fn))
     return tree
 
@@ -40,20 +41,36 @@ def make_tree(path):
 @app.route('/new_project', methods = ['GET'])
 @htpasswd.required
 def new_project(user):
-    print("REQUESTED NEW PROJECT!")
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    # flash("HIIII")
-    # return render_template('index.html', tree=make_tree(path), file_contents="IEEE;")
     projname = path + request.args.get('projname')
     print(projname)
     if not os.path.exists(path=projname):
         os.mkdir(path=projname)
         os.chmod(path=projname, mode=0o2774)
-        # return render_template('index.html', tree=make_tree(path), file_contents="IEEE;") 
     else:
         flash('The project already exists', 'error')
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
+@app.route('/new_file', methods = ['GET'])
+@htpasswd.required
+def new_file(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    current_dir = request.args.get('current_dir')
+    filename = current_dir + "/" + request.args.get('filename')
+
+    if os.path.exists(path=current_dir):
+        if os.path.exists(path=filename):
+            flash('The file with the given name already exists', 'error')
+            return redirect(url_for('index'))
+        
+        open(filename, "w")
+        os.chmod(path=filename, mode=0o660)
+    else:
+        flash('The specified folder does not exists', 'error')
+        return redirect(url_for('index'))
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
 
 
 # https://gist.github.com/andik/e86a7007c2af97e50fbb

@@ -18,7 +18,19 @@
     }
 
     function new_file() {
-        alert("The most recently clicked project is ", most_recent_project)
+        if (current_dir) {
+            var name = ""
+            while (name.trim() == "") {
+                name = prompt("Please provide a valid file name");
+            }
+            fetch('/new_file?' + new URLSearchParams({
+                filename : name.trim(),
+                current_dir : current_dir
+            }))
+            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+
+            // TODO: this also has the "refresh problem" we had with "New Project"
+        }
     }
 
     function save_file() {
@@ -67,7 +79,8 @@
                 <h1>{{ tree.name }}</h1>
                 <ul>
                     {%- for item in tree.children recursive %}
-                    <li class="file-tree-file"> <span class="caret" data-pathname="{{ item.path }}">{{ item.name
+                    <li class="file-tree-file"> <span class="caret" data-pathname="{{ item.path }}"
+                            data-dirname="{{ item.dirname }}">{{ item.name
                             }}</span>
                         {%- if item.children -%}
                         <ul class="nested">{{ loop(item.children) }}</ul>
@@ -79,10 +92,11 @@
             <!-- Directory tree ends -->
         </div>
         <div class="name-and-ide-box">
-            
-            <div class="filename" id="filename_container" style="display: none;"><span id="filename_name"></span><span id="save_indicator"></span></div>
+
+            <div class="filename" id="filename_container" style="display: none;"><span id="filename_name"></span><span
+                    id="save_indicator"></span></div>
             <!-- the text editor -->
-            
+
             <div class="ide" id="editor"> {{ file_contents }}
             </div>
             <script>
@@ -103,8 +117,9 @@
     var toggler = document.getElementsByClassName("caret");
     var i;
     var current_file = null;
+    var current_dir = null; // string pathname
+    var selected_dir = null; // document object
 
-    // TODO: keep track of the most recently clicked project (and possible highlight it) in the most_recent_project variable
     for (i = 0; i < toggler.length; i++) {
         toggler[i].addEventListener("click", function () {
             nested = this.parentElement.querySelector(".nested");
@@ -130,15 +145,30 @@
                             editor.session.setTabSize(4);
                             editor.setValue(json.contents, -1);
                         });
+                } else if (pathname == "") {
+                    current_dir = this.getAttribute("data-dirname")
+                    if (selected_dir != null) {
+                        selected_dir.style.border = ""; // unselect the old color
+                    }
+                    this.style.border = "1px solid red";
+                    selected_dir = this;
                 }
 
             } else {
                 nested.classList.toggle("active");
                 this.classList.toggle("caret-down");
+
+                current_dir = this.getAttribute("data-dirname");
+                if (selected_dir != null) {
+                    selected_dir.style.border = ""; // unselect the old color
+                }
+                this.style.border = "1px solid red";
+                selected_dir = this;
             }
         });
     }
 
+    // TODO: how to allow people to move about directories?
 
     // command S implementation: https://www.thatsoftwaredude.com/content/8783/how-to-ctrl--s-to-save-in-javascript
     var isCtrl = false;
