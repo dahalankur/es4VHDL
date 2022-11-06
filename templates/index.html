@@ -21,6 +21,25 @@
         alert("The most recently clicked project is ", most_recent_project)
     }
 
+    function save_file() {
+        var editor = ace.edit("editor");
+        file_contents = editor.getValue()
+        if (current_file) {
+            fetch('/save_file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                "file_contents": file_contents,
+                "current_file": current_file
+            })});
+        }
+        else {
+            alert("Please select a file");
+        }
+    }
+
     function synthesize() {
 
     }
@@ -31,14 +50,14 @@
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <div>
-    <div class="top-bar">
-        <button id="New_Project" onclick="new_project()">New Project</button>
-        <button id="New_File" onclick="new_file()">New File</button>
-        <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
-        <button id="Synthesize" onclick="synthesize_project()"> Synthesize project</button>
-
-
-        <button> Button 3</button>
+    <div id="navbar-container">
+        <div id="navbar">
+            <button id="New_Project" onclick="new_project()">New Project</button>
+            <button id="New_File" onclick="new_file()">New File</button>
+            <button id="Save_File" onclick="save_file()">Save</button>
+            <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
+            <button id="Synthesize_Project" onclick="synthesize_project()"> Synthesize project</button>
+        </div>
     </div>
     <div class="bottom-box">
         <!-- the resizabel file tree  -->
@@ -48,7 +67,8 @@
                 <h1>{{ tree.name }}</h1>
                 <ul>
                     {%- for item in tree.children recursive %}
-                    <li> <span class="caret" data-pathname="{{ item.path }}">{{ item.name }}</span>
+                    <li class="file-tree-file"> <span class="caret" data-pathname="{{ item.path }}">{{ item.name
+                            }}</span>
                         {%- if item.children -%}
                         <ul class="nested">{{ loop(item.children) }}</ul>
                         {%- endif %}
@@ -69,21 +89,20 @@
     </div>
     <!-- This is where the output messages would appear, if any.
         Such as "Line 25: unknown variable 'TODO'"-->
-    <div id="output_window">
-        Error: Degree audit failed
+    <div id="output_window" style="border: 1px red;">
+        THE OUTPUT FROM TERMINAL GOES HERE (ghdl output, etc.)
     </div>
-
-
 </div>
 
 
 <script>
     var toggler = document.getElementsByClassName("caret");
     var i;
+    var current_file = null;
+
     // TODO: keep track of the most recently clicked project (and possible highlight it) in the most_recent_project variable
     for (i = 0; i < toggler.length; i++) {
         toggler[i].addEventListener("click", function () {
-            // The line below has an error
             parent = this.parentElement;
 
             nested = parent.querySelector(".nested");
@@ -91,7 +110,7 @@
             if (nested == null) {
                 editor = document.getElementById("editor");
                 pathname = this.getAttribute("data-pathname");
-                console.log("PATHNAME = ", pathname);
+                current_file = pathname;
                 if (pathname != "" && pathname != null) {
                     target = '/get_file?' + new URLSearchParams({ filename: pathname })
                     fetch(target, {
@@ -103,14 +122,15 @@
                             editor.session.setTabSize(4);
                             editor.setValue(json.contents, -1);
                         });
-                    }
-                } else {
-                    nested.classList.toggle("active");
-                    this.classList.toggle("caret-down");
                 }
-                /* Make a get request to the backend for the file contents */
-                /* Set the editor contents to the file contents */
-            });
+                
+            } else {
+                nested.classList.toggle("active");
+                this.classList.toggle("caret-down");
+            }
+            /* Make a get request to the backend for the file contents */
+            /* Set the editor contents to the file contents */
+        });
     }
 </script>
 

@@ -62,7 +62,7 @@
 }
 
 .file-tree-file {
-    list-style-type: "-->"
+    list-style-type: "";
 }
 
 /* Below is taken from this tutorial on drop downs */
@@ -75,13 +75,15 @@
     -moz-user-select: none; /* Firefox 2+ */
     -ms-user-select: none; /* IE 10+ */
     user-select: none;
+    border: 1px solid gray;
   }
   
   .caret::before {
-    content: "\25B6";
+    content: ">";
     color: black;
     display: inline-block;
     margin-right: 6px;
+    border: 1px solid lightgray;
   }
   
   .caret-down::before {
@@ -92,6 +94,7 @@
   
   .nested {
     display: none;
+    border: 1px;
   }
   
   .active {

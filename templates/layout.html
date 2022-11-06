@@ -12,12 +12,6 @@
 </head>
 
 <body>
-    <div id="navbar-container">
-        <div id="navbar">
-            TODO: NAVBAR (button functionality??)
-        </div>
-    </div>
-
     {% for category, message in get_flashed_messages(with_categories=True) %}
         <div class="alert alert-{{category}}">Error: {{ message }}</div>
     {% endfor %}
