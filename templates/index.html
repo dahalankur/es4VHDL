@@ -252,8 +252,10 @@
             <div class="ide" id="editor"> {{ file_contents }}
             </div>
             <script>
-                var editor = ace.edit("editor");
-                editor.session.setMode("ace/mode/vhdl");
+                    var editor = ace.edit("editor");
+                    editor.setTheme("ace/theme/solarized_light");
+                    editor.session.setMode("ace/mode/vhdl");
+                    document.getElementById("editor").style.fontSize='14px';
             </script>
         </div>
     </div>
