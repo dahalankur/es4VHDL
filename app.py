@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
 import os
+import shutil
 
 default_msg = '''
 Welcome to ES4 VHDL online editor!
@@ -52,6 +53,24 @@ def delete_file(user):
         flash('No file with the given name exists', 'error')
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
+
+@app.route('/delete_folder', methods = ['GET'])
+@htpasswd.required
+def delete_folder(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    to_delete = request.args.get('current_dir')
+    if os.path.exists(path=to_delete):
+        if not os.path.isdir(to_delete):
+            flash('Cannot delete non-directory', 'error')
+            return redirect(url_for('index'))
+        # Delete the file
+        shutil.rmtree(to_delete, ignore_errors=False, onerror=None)
+    else:
+        flash('No directory with the given name exists', 'error')
+        return redirect(url_for('index'))
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
 
 
 @app.route('/new_folder', methods = ['GET'])

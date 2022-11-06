@@ -51,17 +51,33 @@
 
 
     function delete_file() {
-        if(!confirm('Are you sure?')) {
-            return;
-        }   
-        fetch('/delete_file?' + new URLSearchParams({
-            filename: current_file
-        }))
-            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
-            current_file = null;
-            // TODO: this also has the "refresh problem" we had with "New Project"
+        if (current_file) {
+            if(!confirm('Are you sure?')) {
+                return;
+            }
+            fetch('/delete_file?' + new URLSearchParams({
+                filename: current_file
+            }))
+                // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+                current_file = null;
+                // TODO: this also has the "refresh problem" we had with "New Project"
+        }
     }
 
+    function delete_folder() {
+        if (current_dir) {
+            if(!confirm('Are you sure?')) {
+                return;
+            }   
+            fetch('/delete_folder?' + new URLSearchParams({
+                current_dir: current_dir
+            }))
+                // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+                current_dir = null;
+                selected_dir = null;
+                // TODO: this also has the "refresh problem" we had with "New Project"
+        }
+    }
     
     function save_file() {
         var editor = ace.edit("editor");
@@ -84,7 +100,11 @@
     }
 
     function synthesize() {
-
+        if (current_file) {
+            // TODO: send request to backend that invokes the synthesis script and possibly returns the svg as json response...
+        } else {
+            alert("Please select a file");
+        }
     }
 </script>
 
@@ -98,6 +118,7 @@
             <button id="New_File" onclick="new_file()">New File</button>
             <button id="New_Folder" onclick="new_folder()">New Folder</button>
             <button id="Delete_File" onclick="delete_file()">Delete File</button>
+            <button id="Delete_Folder" onclick="delete_folder()">Delete Folder</button>
             <button id="Save_File" onclick="save_file()">Save</button>
             <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
             <button id="Synthesize_Project" onclick="synthesize_project()"> Synthesize project</button>
@@ -111,11 +132,16 @@
                 <h1>{{ tree.name }}</h1>
                 <ul>
                     {%- for item in tree.children recursive %}
-                    <li class="file-tree-file"> <span class="caret" data-pathname="{{ item.path }}"
-                            data-dirname="{{ item.dirname }}">{{ item.name
-                            }}</span>
+                    <li class="file-tree-file">
+                         <span class="caret" 
+                                data-pathname="{{ item.path }}"
+                                data-dirname="{{ item.dirname }}" 
+                                oncontextmenu="window.alert('TODO')">
+                            {{ item.name }}
+                        </span>
                         {%- if item.children -%}
-                        <ul class="nested">{{ loop(item.children) }}</ul>
+                        <ul class="nested" oncontextmenu="window.alert('TODO')">
+                            {{ loop(item.children) }}</ul>
                         {%- endif %}
                     </li>
                     {%- endfor %}
