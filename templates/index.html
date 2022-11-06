@@ -24,8 +24,8 @@
                 name = prompt("Please provide a valid file name");
             }
             fetch('/new_file?' + new URLSearchParams({
-                filename : name.trim(),
-                current_dir : current_dir
+                filename: name.trim(),
+                current_dir: current_dir
             }))
             // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
 
@@ -33,6 +33,36 @@
         }
     }
 
+    function new_folder() {
+        if (current_dir) {
+            var name = ""
+            while (name.trim() == "") {
+                name = prompt("Please provide a valid directory name");
+            }
+            fetch('/new_folder?' + new URLSearchParams({
+                dirname: name.trim(),
+                current_dir: current_dir
+            }))
+            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+
+            // TODO: this also has the "refresh problem" we had with "New Project"
+        }
+    }
+
+
+    function delete_file() {
+        if(!confirm('Are you sure?')) {
+            return;
+        }   
+        fetch('/delete_file?' + new URLSearchParams({
+            filename: current_file
+        }))
+            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+            current_file = null;
+            // TODO: this also has the "refresh problem" we had with "New Project"
+    }
+
+    
     function save_file() {
         var editor = ace.edit("editor");
         file_contents = editor.getValue()
@@ -66,6 +96,8 @@
         <div id="navbar">
             <button id="New_Project" onclick="new_project()">New Project</button>
             <button id="New_File" onclick="new_file()">New File</button>
+            <button id="New_Folder" onclick="new_folder()">New Folder</button>
+            <button id="Delete_File" onclick="delete_file()">Delete File</button>
             <button id="Save_File" onclick="save_file()">Save</button>
             <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
             <button id="Synthesize_Project" onclick="synthesize_project()"> Synthesize project</button>
@@ -193,3 +225,4 @@
 </script>
 
 {% endblock %}
+
