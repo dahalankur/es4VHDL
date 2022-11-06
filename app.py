@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
 import os
+import subprocess
 import shutil
 
 default_msg = '''
@@ -158,9 +159,25 @@ def save_file(user):
         # Write the data to the file
         with open(body["current_file"], "w") as file:
             file.write(body["file_contents"])
-    
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
+
+@app.route('/synthesize_netlist', methods=['GET'])
+@htpasswd.required
+def synthesize_netlist(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    to_synthesize = request.args.get('filename')
+    if os.path.exists(path=to_synthesize):
+        if not os.path.isfile(path=to_synthesize):
+            flash('Cannot synthesize non-file', 'error')
+            return redirect(url_for('index'))
+        # TODO: instruct build_files.py to synthesize the file to_synthesize
+
+        
+    else:
+        flash('No file with the given name exists', 'error')
+        return redirect(url_for('index'))
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)

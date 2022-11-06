@@ -52,33 +52,33 @@
 
     function delete_file() {
         if (current_file) {
-            if(!confirm('Are you sure?')) {
+            if (!confirm('Are you sure?')) {
                 return;
             }
             fetch('/delete_file?' + new URLSearchParams({
                 filename: current_file
             }))
-                // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
-                current_file = null;
-                // TODO: this also has the "refresh problem" we had with "New Project"
+            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+            current_file = null;
+            // TODO: this also has the "refresh problem" we had with "New Project"
         }
     }
 
     function delete_folder() {
         if (current_dir) {
-            if(!confirm('Are you sure?')) {
+            if (!confirm('Are you sure?')) {
                 return;
-            }   
+            }
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
-                // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
-                current_dir = null;
-                selected_dir = null;
-                // TODO: this also has the "refresh problem" we had with "New Project"
+            // .then(window.location.reload()) TODO: fixme, i need to reload to show the directory that has just been created
+            current_dir = null;
+            selected_dir = null;
+            // TODO: this also has the "refresh problem" we had with "New Project"
         }
     }
-    
+
     function save_file() {
         var editor = ace.edit("editor");
         file_contents = editor.getValue()
@@ -100,8 +100,16 @@
     }
 
     function synthesize() {
+        var editor = ace.edit("editor");
+        file_contents = editor.getValue()
         if (current_file) {
-            // TODO: send request to backend that invokes the synthesis script and possibly returns the svg as json response...
+            // save the file and send the filename over to the backend
+            save_file()
+
+            fetch('/synthesize_file?' + new URLSearchParams({
+                filename: current_file
+            }));
+
         } else {
             alert("Please select a file");
         }
@@ -133,10 +141,8 @@
                 <ul>
                     {%- for item in tree.children recursive %}
                     <li class="file-tree-file">
-                         <span class="caret" 
-                                data-pathname="{{ item.path }}"
-                                data-dirname="{{ item.dirname }}" 
-                                oncontextmenu="window.alert('TODO')">
+                        <span class="caret" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
+                            oncontextmenu="window.alert('TODO')">
                             {{ item.name }}
                         </span>
                         {%- if item.children -%}
@@ -251,4 +257,3 @@
 </script>
 
 {% endblock %}
-
