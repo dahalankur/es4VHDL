@@ -1,6 +1,6 @@
 import os
 import shutil
-# from build_files import 
+from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
 
@@ -162,21 +162,23 @@ def save_file(user):
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
 
-@app.route('/synthesize_netlist', methods=['GET'])
+'''
+In analysis mode, GHDL compiles one or more files, and creates an object file for each source file. The analysis mode is selected with -a switch. Any argument starting with a dash is a option, the others are filenames. No option is allowed after a filename argument. GHDL analyzes each filename in the given order, and stops the analysis in case of error (the following files are not analyzed).
+'''
+@app.route('/analyze_ghdl_file', methods=['GET'])
 @htpasswd.required
-def synthesize_netlist(user):
+def analyze_ghdl_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    to_synthesize = request.args.get('filename')
-    if os.path.exists(path=to_synthesize):
-        if not os.path.isfile(path=to_synthesize):
-            flash('Cannot synthesize non-file', 'error')
-            return redirect(url_for('index'))
-        # TODO: instruct build_files.py to synthesize the file to_synthesize
-
-    else:
-        flash('No file with the given name exists', 'error')
+    to_analyze = request.args.get('filename')
+    if not os.path.exists(path=to_analyze):
+        flash("No such file exists")
         return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg) 
+
+    output = safe_run(["ghdl", "-a", "-fsynopsys", to_analyze], timeout=5).decode("utf-8")
+    data = {
+            "output" : output,
+        }
+    return jsonify(data)
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)

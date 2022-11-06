@@ -100,16 +100,39 @@
     }
 
     function synthesize() {
-        var editor = ace.edit("editor");
-        file_contents = editor.getValue()
+        if (current_file) {
+            // save the file and send the filename over to the backend
+            save_file()
+            // TODO: endpoint currently does not exist in app.py
+            fetch('/synthesize_file?' + new URLSearchParams({
+                filename: current_file
+            }));
+        } else {
+            alert("Please select a file");
+        }
+    }
+
+    function analyze() {
         if (current_file) {
             // save the file and send the filename over to the backend
             save_file()
 
-            fetch('/synthesize_file?' + new URLSearchParams({
+            fetch('/analyze_ghdl_file?' + new URLSearchParams({
                 filename: current_file
-            }));
-
+            }))
+            .then(function (response) { return response.json(); })
+                        .then(json => {
+                            output_window = document.getElementById("output_window")
+                            if(json.output.trim() != "") {
+                                output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
+                                output_window.style.border = "1px solid red";
+                            } else {
+                                output_window.style.border = "1px solid green";
+                                output_window.innerHTML = "Output: <pre style=\"color: green\">No errors! Analysis success</pre>";
+                            }
+                        }), error => {
+                            console.log(error);
+                        };
         } else {
             alert("Please select a file");
         }
@@ -128,7 +151,8 @@
             <button id="Delete_File" onclick="delete_file()">Delete File</button>
             <button id="Delete_Folder" onclick="delete_folder()">Delete Folder</button>
             <button id="Save_File" onclick="save_file()">Save</button>
-            <button id="Synthesize" onclick="synthesize()"> Synthesize file</button>
+            <button id="Analyze" onclick="analyze()">Analyze</button>
+            <button id="Synthesize" onclick="synthesize()">Synthesize</button>
         </div>
     </div>
     <div class="bottom-box">
@@ -170,8 +194,8 @@
     </div>
     <!-- This is where the output messages would appear, if any.
         Such as "Line 25: unknown variable 'TODO'"-->
-    <div id="output_window" style="border: 1px red;">
-        THE OUTPUT FROM TERMINAL GOES HERE (ghdl output, etc.)
+    <div class="output_window_class" id="output_window">
+
     </div>
 </div>
 
