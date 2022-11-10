@@ -60,6 +60,7 @@ def delete_file(user):
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
+# TODO: write a config file that generates a makefile for that project, and simply run make on the backend
 
 @app.route('/delete_folder', methods = ['GET'])
 @htpasswd.required
