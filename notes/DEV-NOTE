@@ -20,3 +20,6 @@ will automatically set the relevant permissions so the web server can read/write
 the files in their directories. 
 
 One issue: how to make .htaccess work while serving webpages with Flask and gunicorn? Will it "just work"?
+
+how to add to .htpasswd?
+`htpasswd -n username >> .htpasswd`
