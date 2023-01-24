@@ -23,3 +23,13 @@ One issue: how to make .htaccess work while serving webpages with Flask and guni
 
 how to add to .htpasswd?
 `htpasswd -n username >> .htpasswd`
+
+
+What happens if permissions are messed up?
+- check that your home directory has drwx--x--x permissions.
+- re-run the setup script to fix permissions
+
+
+Install FPGA toolchain (github repo), netlistsvg via npm.
+
+Need to use GHDL_PREFIX env variable to run synthesis. (setenv GHDL_PREFIX ./fpga-toolchain/lib/ghdl/)

@@ -27,7 +27,7 @@
             }
         });
     }
-// TODO: create an exapand all button to expand all directories in the tree
+    // TODO: create an exapand all button to expand all directories in the tree
     function new_file() {
         if (current_dir) {
             var name = ""
@@ -171,9 +171,35 @@
             // TODO: endpoint currently does not exist in app.py
             fetch('/synthesize_file?' + new URLSearchParams({
                 filename: current_file
-            }));
+            }))
+                .then(function (response) { return response.json(); })
+                .then(json => {
+                    output_window = document.getElementById("output_window")
+                    output_window.innerHTML = "Output: <pre>" + json.output + "</pre>" // TODO: change this, and handle errors
+
+                    // if (json.output.trim() != "" && !json.success) {
+                    //     output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
+                    //     output_window.style.border = "1px solid red";
+                    // } else {
+                    //     output_window.style.border = "1px solid green";
+                    //     output_window.innerHTML = "Output: <pre style=\"color: green\">No errors!</pre>";
+                    //     alert("No errors")
+                    // }
+                }), error => {
+                    console.log(error);
+                };
         } else {
             alert("Please select a file to synthesize from the directory tree");
+        }
+    }
+    function build() {
+        if (current_dir) {
+            // save_file() TODO: figure out a way to save file (or don't)
+            fetch('/build?' + new URLSearchParams({
+                directory: current_dir
+            }));
+        } else {
+            alert("Please select a project to build from the directory tree");
         }
     }
 
@@ -218,6 +244,7 @@
             <button id="Save_File" onclick="save_file()">Save</button>
             <button id="Analyze" onclick="analyze()">Analyze</button>
             <button id="Synthesize" onclick="synthesize()">Synthesize</button>
+            <button id="Build" onclick="build()">Build</button>
         </div>
     </div>
     <div class="bottom-box">
@@ -248,15 +275,17 @@
             <div class="filename" id="filename_container" style="display: none;"><span id="filename_name"></span><span
                     id="save_indicator"></span></div>
             <!-- the text editor -->
-
-            <div class="ide" id="editor"> {{ file_contents }}
+            <div style="background-color: #fdf6e3" id="editor_container">
+                <div class="ide" id="editor"> {{ file_contents }} </div>
+                <div id="netlist-svg" class="netlist-svg"></div>
             </div>
             <script>
-                    var editor = ace.edit("editor");
-                    editor.setTheme("ace/theme/solarized_light");
-                    editor.session.setMode("ace/mode/vhdl");
-                    document.getElementById("editor").style.fontSize='14px';
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/solarized_light");
+                editor.session.setMode("ace/mode/vhdl");
+                document.getElementById("editor").style.fontSize = '14px';
             </script>
+
         </div>
     </div>
     <!-- This is where the output messages would appear, if any.
@@ -295,9 +324,34 @@
                     })
                         .then(function (response) { return response.json(); })
                         .then(function (json) {
-                            editor = ace.edit("editor");
-                            editor.session.setTabSize(4);
-                            editor.setValue(json.contents, -1);
+                            // if pathname ends with svg, set the ace editor to svg mode.
+                            if (pathname.endsWith(".svg")) {
+                                // hide the editor
+                                document.getElementById("editor").style.display = "none";
+
+                                // show the svg
+                                document.getElementById("netlist-svg").style.display = "block";
+
+
+                                // console.log(document.getElementById("editor").innerHTML);
+                                document.getElementById("netlist-svg").innerHTML = json.contents;
+                            } else {
+                                // replace inner html with ace editor and set mode to vhdl and fill with contents
+                                // Show the editor
+                                document.getElementById("editor").style.display = "block";
+
+                                // hide the svg
+                                document.getElementById("netlist-svg").style.display = "none";
+
+                                editor = ace.edit("editor");
+                                editor.session.setTabSize(4);
+                                editor.session.setMode("ace/mode/vhdl");
+                                editor.setTheme("ace/theme/solarized_light");
+                                document.getElementById("editor").style.fontSize = '14px';
+
+                                editor.setValue(json.contents, -1);
+                                console.log(json.contents);
+                            }
                         });
                 } else if (pathname == "") {
                     current_dir = this.getAttribute("data-dirname")
@@ -344,6 +398,7 @@
         e.preventDefault();
         isCtrl = false;
     });
+
 </script>
 
 {% endblock %}

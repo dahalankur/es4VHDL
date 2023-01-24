@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
@@ -109,6 +110,11 @@ def new_project(user):
     if not os.path.exists(path=projname):
         os.mkdir(path=projname)
         os.chmod(path=projname, mode=0o2775)
+        # Make a new file "config.json"
+        config_file = projname + "/" + "config.json"
+        with open(config_file, "w") as f:
+            f.write('{\n\t"project": "' + request.args.get('projname') + '",\n \t"toplevel": "",\n\t"testbench": "",\n\t"src": []\n}')
+        os.chmod(path=config_file, mode=0o660)
     else:
         flash('The project already exists', 'error')
         return redirect(url_for('index'))
@@ -154,6 +160,7 @@ def get_file(user):
         }
     return jsonify(data)
 
+#TODO: use sbell's netlist template
 
 @app.route('/save_file', methods=["POST", "GET"])
 @htpasswd.required
@@ -194,6 +201,106 @@ def analyze_ghdl_file(user):
         }
     
     return jsonify(data)
+
+@app.route('/synthesize_file', methods=['GET'])
+@htpasswd.required
+def synthesize_file(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    to_synthesize = request.args.get('filename')
+    if not os.path.exists(path=to_synthesize):
+        flash("No such file exists")
+        return redirect(url_for('index'))
+
+    # remove work-obj08.cf if it exists
+    if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf")):
+        os.remove(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf"))
+    
+    # remove an svg file if it exists
+    if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg")):
+        os.remove(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
+        
+
+    # call synthesize.sh script with the filename as an argument
+    # get python script directory
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # TODO: setenv GHDL_PREFIX f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
+    output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
+    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
+    
+    data = {
+        "output" : output,
+        "success" : build_success
+    }
+    
+    return jsonify(data)
+
+
+@app.route("/build", methods=['GET'])
+@htpasswd.required
+def build(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    directory = request.args.get('directory')
+    makefile_path = f'{directory}/Makefile'
+
+    # generate Makefile based on config.json
+    makefile = generate_makefile(f'{directory}/config.json')
+    with open(makefile_path, "w") as f: f.write(makefile)
+    os.system(f'make -j --directory={directory}')
+    os.chmod(path=makefile_path, mode=0o660)
+
+    # TODO: replace all os.system with safe_run
+
+    # fix permissions
+    for file in os.listdir(directory): 
+        # directory
+        if os.path.isdir(os.path.join(directory, file)):
+            os.chmod(path=os.path.join(directory, file), mode=0o2775)
+        else:
+            os.chmod(path=os.path.join(directory, file), mode=0o660)
+
+    # TODO: show build output in the box! return it as a response
+    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+
+
+def generate_makefile(config):
+    # check if config file exists
+    if not os.path.exists(path=config):
+        flash("No such file exists")
+        return redirect(url_for('index'))
+    else:
+        # read from config.json the files to compile
+        with open(config, "r") as f:
+            config = json.load(f)
+            toplevel_src = config["toplevel"] if config["toplevel"].endswith(".vhd") else config["toplevel"] + ".vhd"
+            src_files = " ".join(config["src"]) + " " + toplevel_src
+            if config["toplevel"].endswith(".vhd"):
+                entity = config["toplevel"][0 : config["toplevel"].index(".vhd")]
+            else:
+                entity = config["toplevel"]
+    
+        return f"""
+##########################################
+#                                        #
+#       Auto generated Makefile          #
+#             DO NOT EDIT                #
+#                                        #
+##########################################
+GHDL = ghdl
+FILES = {src_files}
+ENTITY = {entity}
+FLAGS = --std=08
+
+all:
+\t@$(GHDL) -a $(FLAGS) $(FILES)
+\t@$(GHDL) -e $(FLAGS) $(ENTITY)
+\t@$(GHDL) -r $(FLAGS) $(ENTITY) --wave=wave-top.ghw
+\t@rm -rf wave-top.ghw work-obj08.cf
+\t@echo 'Build successful'
+"""
+
+# TODO: use safe_run for synthesis
+    
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
