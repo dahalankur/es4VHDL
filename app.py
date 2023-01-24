@@ -143,7 +143,7 @@ def index(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
-# TODO: make a 'log' function instead of print that writes to a log file
+# TODO: make a 'log' function instead of print that writes to a log file or figure out where gunicorn logs are written to
 
 @app.route('/get_file', methods=["GET"])
 @htpasswd.required
