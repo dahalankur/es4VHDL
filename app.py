@@ -225,6 +225,8 @@ def synthesize_file(user):
     script_dir = os.path.dirname(os.path.realpath(__file__))
 
     # TODO: setenv GHDL_PREFIX f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
+    # set GHDL_PREFIX env variable 
+    os.environ["GHDL_PREFIX"] = f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
     output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
     build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
     
