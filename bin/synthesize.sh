@@ -18,6 +18,8 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 ghdl -a --std=08 $full_file
 "$script_dir"/fpga-toolchain/bin/yosys -p "ghdl --std=08 $entity; prep -top $entity; write_json -compat-int $output"
+
+# TODO: netlistsvg is installed globally; remove the local references and files later
 node "$script_dir"/node_modules/netlistsvg/bin/netlistsvg.js $output -o "$dir"/$entity-netlist.svg
 chmod 660 "$dir"/$entity-netlist.svg
 rm $output
