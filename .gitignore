@@ -6,3 +6,5 @@ __pycache__
 
 # build files
 *.cf
+
+.DS_Store
