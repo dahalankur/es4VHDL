@@ -203,6 +203,7 @@ def analyze_ghdl_file(user):
     return jsonify(data)
 
 def perform_synthesis(to_synthesize):
+    print("SYNTHESIZING: ", to_synthesize)
     if not os.path.exists(path=to_synthesize):
         flash("No such file exists")
         return redirect(url_for('index'))
@@ -230,6 +231,8 @@ def perform_synthesis(to_synthesize):
         "success" : build_success
     }
     
+    print("DONE SYNTHESIS: ", output)
+
     return jsonify(data)
 
 
@@ -252,6 +255,9 @@ def build(user):
     makefile = generate_makefile(f'{directory}/config.json')
     with open(makefile_path, "w") as f: f.write(makefile)
     output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
+    
+    print(output)
+    
     success = False
     if "Build successful" in output:
         success = True
@@ -269,9 +275,12 @@ def build(user):
         toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
 
     # after build, synthesize the top module
+    print(success, toplevel, directory + "/" + toplevel)
     if success and toplevel != "":
         # send a GET request to synthesize_file using Flasks request
         out = perform_synthesis(directory + "/" + toplevel)
+
+        print(out)
         # json to dict and check for success 
         out = json.loads(out.data)
         # TODO: check success status later

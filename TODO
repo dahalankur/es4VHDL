@@ -4,9 +4,9 @@ hi
 - install yosys (ask mike bauer to install it from https://github.com/YosysHQ/fpga-toolchain/releases/tag/nightly-20211006)
 
 - show "loading" or some other message when something is being done in the background
+- make command + F work to find stuff
 
 
--> show filename at the top of the editor, and like vscode, a circle appears if the file has NOT been saved after an edit. if it has, it disappears. note that cmd S works to save now!! (todo: improve further on page load)
 -> flash messages appearing (OR create our own flashing system)
 -> fix reload issue! New project should automatically add to the DOM.
 -> Format the output window for errors (Scrollable, unintrusive when no errors)
