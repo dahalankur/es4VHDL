@@ -112,4 +112,14 @@
     display: block;
   }
 
+  
   /* End taken from tutorial  */
+  
+  /* https://www.w3schools.com/howto/howto_css_circles.asp */
+  .dot {
+    height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  }

@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import requests
 from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
@@ -61,7 +62,6 @@ def delete_file(user):
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
-# TODO: write a config file that generates a makefile for that project, and simply run make on the backend
 
 @app.route('/delete_folder', methods = ['GET'])
 @htpasswd.required
@@ -202,11 +202,7 @@ def analyze_ghdl_file(user):
     
     return jsonify(data)
 
-@app.route('/synthesize_file', methods=['GET'])
-@htpasswd.required
-def synthesize_file(user):
-    path = os.path.expanduser(f'/h/{user}/.es4/')
-    to_synthesize = request.args.get('filename')
+def perform_synthesis(to_synthesize):
     if not os.path.exists(path=to_synthesize):
         flash("No such file exists")
         return redirect(url_for('index'))
@@ -224,7 +220,6 @@ def synthesize_file(user):
     # get python script directory
     script_dir = os.path.dirname(os.path.realpath(__file__))
 
-    # TODO: setenv GHDL_PREFIX f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
     # set GHDL_PREFIX env variable 
     os.environ["GHDL_PREFIX"] = f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
     output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
@@ -238,6 +233,14 @@ def synthesize_file(user):
     return jsonify(data)
 
 
+@app.route('/synthesize_file', methods=['GET'])
+@htpasswd.required
+def synthesize_file(user):
+    to_synthesize = request.args.get('filename')
+
+    return perform_synthesis(to_synthesize)
+
+
 @app.route("/build", methods=['GET'])
 @htpasswd.required
 def build(user):
@@ -248,20 +251,40 @@ def build(user):
     # generate Makefile based on config.json
     makefile = generate_makefile(f'{directory}/config.json')
     with open(makefile_path, "w") as f: f.write(makefile)
-    os.system(f'make -j --directory={directory}')
+    output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
+    success = False
+    if "Build successful" in output:
+        success = True
+    
+    # TODO: return success status to the frontend somehow
+
+    # print("Build status: ", success)
+    
     os.chmod(path=makefile_path, mode=0o660)
+    
+    # from config.json, get the toplevel module
+    toplevel = ""
+    with open(f'{directory}/config.json', 'r') as f:
+        config = json.load(f)
+        toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
 
-    # TODO: replace all os.system with safe_run
+    # after build, synthesize the top module
+    if success and toplevel != "":
+        # send a GET request to synthesize_file using Flasks request
+        out = perform_synthesis(directory + "/" + toplevel)
+        # json to dict and check for success 
+        out = json.loads(out.data)
+        # TODO: check success status later
 
-    # fix permissions
-    for file in os.listdir(directory): 
-        # directory
-        if os.path.isdir(os.path.join(directory, file)):
-            os.chmod(path=os.path.join(directory, file), mode=0o2775)
-        else:
-            os.chmod(path=os.path.join(directory, file), mode=0o660)
+        # fix permissions
+        for file in os.listdir(directory): 
+            # directory
+            if os.path.isdir(os.path.join(directory, file)):
+                os.chmod(path=os.path.join(directory, file), mode=0o2775)
+            else:
+                os.chmod(path=os.path.join(directory, file), mode=0o660)
 
-    # TODO: show build output in the box! return it as a response
+        # TODO: show build output in the box! return it as a response
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 

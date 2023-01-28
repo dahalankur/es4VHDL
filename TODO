@@ -1,18 +1,14 @@
 hi
 
 - MODIFY setup script to fix permissions if the .es4 folder already exists
-- make sure build saves config file
 - install yosys (ask mike bauer to install it from https://github.com/YosysHQ/fpga-toolchain/releases/tag/nightly-20211006)
-- setenv GHDL_PREFIX fpga-toolchain/lib/ghdl/ !!! THIS NEEDS TO BE THERE! TODO: set this env in the process before running it so explicit setting is not required
-- maybe npm install netlistsvg too
+
+- show "loading" or some other message when something is being done in the background
 
 
--> show filename at the top of the editor, and like vscode, a circle appears if the file has NOT been saved after an edit. if it has, it disappears. note that cmd S works to save now!!
+-> show filename at the top of the editor, and like vscode, a circle appears if the file has NOT been saved after an edit. if it has, it disappears. note that cmd S works to save now!! (todo: improve further on page load)
 -> flash messages appearing (OR create our own flashing system)
 -> fix reload issue! New project should automatically add to the DOM.
--> Compile code 
--> Synthesize a project
--> netlist viewer (new tab?)
 -> Format the output window for errors (Scrollable, unintrusive when no errors)
 -> Warning when switching files (did you save?)
 -> indicate where the new file/dir is being created (like vscode)
@@ -28,3 +24,7 @@ hi
 -> UX improvements
 -> Save files to local computer (download full tree, later task. ZIP file)
 - make svg viewer zoomable
+
+
+--- bugs 
+-> CONTROL + Z on a new file goes to the old file.
