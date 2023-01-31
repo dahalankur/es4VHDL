@@ -3,7 +3,8 @@
 
 - show "loading" or some other message when something is being done in the background
 - make command + F work to find stuff
-
+- error messages for everything!! build, synthesis, file/folder creation, pins, etc. etc.!!!
+    - config errors => report in output
 
 -> flash messages appearing (OR create our own flashing system)
 -> fix reload issue! New project should automatically add to the DOM.

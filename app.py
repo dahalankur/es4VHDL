@@ -113,7 +113,7 @@ def new_project(user):
         # Make a new file "config.json"
         config_file = projname + "/" + "config.json"
         with open(config_file, "w") as f:
-            f.write('{\n\t"project": "' + request.args.get('projname') + '",\n \t"toplevel": "",\n\t"testbench": "",\n\t"src": []\n}')
+            f.write('{\n\t"project": "' + request.args.get('projname') + '",\n \t"toplevel": "",\n\t"testbench": "",\n\t"src": [],\n\t"pins": { }\n}')
         os.chmod(path=config_file, mode=0o660)
     else:
         flash('The project already exists', 'error')
@@ -249,8 +249,16 @@ def build(user):
     # generate Makefile based on config.json
     makefile = generate_makefile(f'{directory}/config.json')
     with open(makefile_path, "w") as f: f.write(makefile)
+    
+    # generate pin constraints file based on config.json
+    pin_constraints = generate_pinconstraint(f'{directory}/config.json')
+    
+    with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
+    
+
     output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
     
+
     print(output)
     
     success = False
@@ -288,11 +296,28 @@ def build(user):
         # TODO: show build output in the box! return it as a response
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
+def generate_pinconstraint(config):
+    # check if config file exists
+    if not os.path.exists(path=config):
+        flash("config.json does not exist")
+        return redirect(url_for('index'))
+    else:
+        # read from config.json the pin mappings
+        with open(config, "r") as f:
+            config = json.load(f)
+            pins = config["pins"]
+            pins_str = ""
+            for varName, pinNumber in pins.items():
+                pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {varName}]\n"
+
+
+
+            return pins_str
 
 def generate_makefile(config):
     # check if config file exists
     if not os.path.exists(path=config):
-        flash("No such file exists")
+        flash("config.json does not exist")
         return redirect(url_for('index'))
     else:
         # read from config.json the files to compile
@@ -330,3 +355,23 @@ all:
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
+
+
+
+
+'''
+Example .toml file (backup for config.json)
+
+[projectConfig]
+project  = "project name"
+toplevel = "sevenseg.vhd"
+testbench = "none"
+src = ["seveseg.vhd", "alu.vhd"]
+
+[pins]
+clk = 1
+A_0 = 2
+A_1 = 2
+B_2 = 3
+
+'''
