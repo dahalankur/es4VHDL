@@ -1,5 +1,3 @@
-hi
-
 - MODIFY setup script to fix permissions if the .es4 folder already exists
 - install yosys (ask mike bauer to install it from https://github.com/YosysHQ/fpga-toolchain/releases/tag/nightly-20211006)
 
