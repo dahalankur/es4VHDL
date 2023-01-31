@@ -309,9 +309,7 @@ def generate_pinconstraint(config):
             pins_str = ""
             for varName, pinNumber in pins.items():
                 pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {varName}]\n"
-
-
-
+            
             return pins_str
 
 def generate_makefile(config):
