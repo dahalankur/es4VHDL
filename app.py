@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import toml
 import requests
 from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
@@ -110,10 +111,23 @@ def new_project(user):
     if not os.path.exists(path=projname):
         os.mkdir(path=projname)
         os.chmod(path=projname, mode=0o2775)
-        # Make a new file "config.json"
-        config_file = projname + "/" + "config.json"
+        # Make a new file "config.toml"
+        config_file = projname + "/" + "config.toml"
         with open(config_file, "w") as f:
-            f.write('{\n\t"project": "' + request.args.get('projname') + '",\n \t"toplevel": "",\n\t"testbench": "",\n\t"src": [],\n\t"pins": { }\n}')
+            
+            # TOML THINGY NOW TODO:
+            config_contents = f"""project = "{request.args.get('projname')}"
+toplevel  = ""   # Place your toplevel entity here
+testbench = ""   # Place the name of your test bench here
+src       = []   # List all vhd files you need to build your project 
+
+# List your variable to FPGA pin-mappings here
+[pins]
+# var1 = 1
+# var2 = 32
+# clk  = 8
+"""
+            f.write(config_contents)
         os.chmod(path=config_file, mode=0o660)
     else:
         flash('The project already exists', 'error')
@@ -246,12 +260,12 @@ def build(user):
     directory = request.args.get('directory')
     makefile_path = f'{directory}/Makefile'
 
-    # generate Makefile based on config.json
-    makefile = generate_makefile(f'{directory}/config.json')
+    # generate Makefile based on config.toml
+    makefile = generate_makefile(f'{directory}/config.toml')
     with open(makefile_path, "w") as f: f.write(makefile)
     
-    # generate pin constraints file based on config.json
-    pin_constraints = generate_pinconstraint(f'{directory}/config.json')
+    # generate pin constraints file based on config.toml
+    pin_constraints = generate_pinconstraint(f'{directory}/config.toml')
     
     with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
     
@@ -268,59 +282,61 @@ def build(user):
     # TODO: return success status to the frontend somehow
 
     # print("Build status: ", success)
-    
+    print("MAKEFILE PATH: ", makefile_path)
     os.chmod(path=makefile_path, mode=0o660)
     
-    # from config.json, get the toplevel module
+    # from config.toml, get the toplevel module
     toplevel = ""
-    with open(f'{directory}/config.json', 'r') as f:
-        config = json.load(f)
+    with open(f'{directory}/config.toml', 'r') as f:
+        config = toml.load(f)
         toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
 
     # after build is complete, synthesize the top module
     if success and toplevel != "":
         out = perform_synthesis(directory + "/" + toplevel)
 
-        # json to dict and check for success 
-        out = json.loads(out.data)
+        # toml to dict and check for success 
+        out = toml.loads(str(out.data)) # TODO: error is being thrown from here, investigate later
         # TODO: check success status later
 
-        # fix permissions
-        for file in os.listdir(directory): 
-            # directory
-            if os.path.isdir(os.path.join(directory, file)):
-                os.chmod(path=os.path.join(directory, file), mode=0o2775)
-            else:
-                os.chmod(path=os.path.join(directory, file), mode=0o660)
-
+        try:
+            # fix permissions
+            for file in os.listdir(directory): 
+                # directory
+                if os.path.isdir(os.path.join(directory, file)):
+                    os.chmod(path=os.path.join(directory, file), mode=0o2775)
+                else:
+                    os.chmod(path=os.path.join(directory, file), mode=0o660)
+        except Exception as error:
+            print("Error changing permission (likely that the owner is not server): ", error)
         # TODO: show build output in the box! return it as a response
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 def generate_pinconstraint(config):
     # check if config file exists
     if not os.path.exists(path=config):
-        flash("config.json does not exist")
+        flash("config.toml does not exist")
         return redirect(url_for('index'))
     else:
-        # read from config.json the pin mappings
+        # read from config.toml the pin mappings
         with open(config, "r") as f:
-            config = json.load(f)
+            config = toml.load(f)
             pins = config["pins"]
             pins_str = ""
             for varName, pinNumber in pins.items():
-                pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {varName}]\n"
+                pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {{{varName}}}]\n"
             
             return pins_str
 
 def generate_makefile(config):
     # check if config file exists
     if not os.path.exists(path=config):
-        flash("config.json does not exist")
+        flash("config.toml does not exist")
         return redirect(url_for('index'))
     else:
-        # read from config.json the files to compile
+        # read from config.toml the files to compile
         with open(config, "r") as f:
-            config = json.load(f)
+            config = toml.load(f)
             toplevel_src = config["toplevel"] if config["toplevel"].endswith(".vhd") else config["toplevel"] + ".vhd"
             src_files = " ".join(config["src"]) + " " + toplevel_src
             if config["toplevel"].endswith(".vhd"):
@@ -353,23 +369,3 @@ all:
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
-
-
-
-
-'''
-Example .toml file (backup for config.json)
-
-[projectConfig]
-project  = "project name"
-toplevel = "sevenseg.vhd"
-testbench = "none"
-src = ["seveseg.vhd", "alu.vhd"]
-
-[pins]
-clk = 1
-A_0 = 2
-A_1 = 2
-B_2 = 3
-
-'''

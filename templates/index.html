@@ -305,10 +305,8 @@ var editor        = ace.edit("editor");
 // using input event instead of change since it's called with some timeout
 editor.on("input", function() {
     saveIndicator.hidden = editor.session.getUndoManager().isClean();
-    let src1 = "https://www.eecs.tufts.edu/~ebrown26/fotor_2023-1-28_13_44_59.png";
-    let src2 = "https://www.eecs.tufts.edu/~ebrown26/ankur-img.png";
     let src3 = "https://www.eecs.tufts.edu/~ebrown26/ellis-img.png";
-    saveIndicator.src = Math.random() < 0.33 ? src1 : Math.random() > 0.5 ? src2 : src3;
+    saveIndicator.src = src3;
 });
 </script>
 
@@ -373,7 +371,16 @@ editor.on("input", function() {
 
                                 editor = ace.edit("editor");
                                 editor.session.setTabSize(4);
-                                editor.session.setMode("ace/mode/vhdl");
+                                
+                                if (pathname.endsWith(".txt")) {
+                                    editor.session.setMode("ace/mode/text");
+                                }
+                                else if (pathname.endsWith(".toml")) {
+                                    editor.session.setMode("ace/mode/toml");
+                                } 
+                                else {
+                                    editor.session.setMode("ace/mode/vhdl");
+                                }
                                 editor.setTheme("ace/theme/solarized_light");
                                 document.getElementById("editor").style.fontSize = '14px';
 
