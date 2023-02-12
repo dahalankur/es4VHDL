@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euo pipefail
-
+# TODO: add usage info for this script, explaining the legal arguments and the purpose
 htpasswd -n "$1" >> .htpasswd

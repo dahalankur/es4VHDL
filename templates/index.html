@@ -293,8 +293,13 @@
         if (current_dir) {
             fetch('/build?' + new URLSearchParams({
                 directory: current_dir
-            }));
-            location.reload();
+            }))
+            .then(function (response) 
+                { if (response.status != 200) {
+                    alert("Error building the project")
+                    } else {
+                        location.reload(); // TODO: question to ellis -> Why was this added?? We also want to preserve the state of the dir tree after reload, but we can think about that once we've finalized our frontend
+                    }})
         } else {
             alert("Please select a project to build from the directory tree");
         }

@@ -31,7 +31,7 @@ default_msg = '''
 Welcome to ES4 VHDL online editor!
 
 Begin by creating a new project, or selecting an existing one!
-TODO list: finish project
+
 '''
 # TODO: add a link to help/documentation page in default_msg
 
@@ -83,7 +83,7 @@ def delete_file(user):
         # Delete the file
         try:
             os.remove(to_delete)
-            app.logger.info(f"{user}: Successfully deleted file {to_delete}")
+            app.logger.info(f"{user}: Deleted file {to_delete}")
         except Exception as error:
             app.logger.error(f"{user}: Error deleting file {to_delete} -> ", error)
             # TODO: send to frontend
@@ -107,7 +107,7 @@ def delete_folder(user):
         # Delete the folder
         try:
             shutil.rmtree(to_delete, ignore_errors=False, onerror=None)
-            app.logger.info(f"{user}: Successfully deleted folder {to_delete}")
+            app.logger.info(f"{user}: Deleted folder {to_delete}")
         except Exception as error:
             app.logger.error(f"{user}: Error deleting folder {to_delete} -> ", error)
             # TODO: send to frontend
@@ -135,7 +135,7 @@ def new_folder(user):
         # Create the new directory with appropriate permissions
             os.mkdir(path=new_dir)
             os.chmod(path=new_dir, mode=0o2775)
-            app.logger.info(f"{user}: Successfully created directory {new_dir}")
+            app.logger.info(f"{user}: Created directory {new_dir}")
         except Exception as error:
             app.logger.error(f"{user}: Error creating directory and/or changing permissions -> ", error)
             # TODO: send to frontend
@@ -173,7 +173,7 @@ src       = []   # List all vhd files you need to build your project
 """
                 f.write(config_contents)
             os.chmod(path=config_file, mode=0o660)
-            app.logger.info(f"{user}: Successfully created project {projname}")
+            app.logger.info(f"{user}: Created project {projname}")
         except Exception as error:
             app.logger.error(f"{user}: Error creating project and/or changing permissions -> ", error)
             # TODO: send this to frontend
@@ -198,7 +198,7 @@ def new_file(user):
         try:
             open(filename, "w")
             os.chmod(path=filename, mode=0o660)
-            app.logger.info(f"{user}: Successfully created file {filename}")
+            app.logger.info(f"{user}: Created file {filename}")
         except Exception as error:
             # TODO: send to frontend
             app.logger.error(f"{user}: Error creating file and/or changing permissions -> ", error)
@@ -215,7 +215,7 @@ def new_file(user):
 @app.route('/')
 @htpasswd.required
 def index(user):
-    app.logger.info(f"{user}: Successfully logged in")
+    app.logger.info(f"{user}: Logged in")
     path = os.path.expanduser(f'/h/{user}/.es4/')
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
@@ -230,7 +230,7 @@ def get_file(user):
         data = {
                 "contents" : file_contents,
             }
-        app.logger.info(f"{user}: Successfully opened {filename}")
+        app.logger.info(f"{user}: Opened {filename}")
     except Exception as error:
         app.logger.error(f"{user}: Error opening file {filename} -> ", error)
         # TODO: send to frontend
@@ -282,7 +282,7 @@ def analyze_ghdl_file(user):
                 "output" : output,
                 "success" : build_success
             }
-        app.logger.info(f"{user}: Successfully ran analysis on file {to_analyze}")
+        app.logger.info(f"{user}: Ran analysis on file {to_analyze}")
     except Exception as error:
         app.logger.error(f"{user}: Error analyzing file {to_analyze} -> ", error)
         # TODO: send to frontend
@@ -323,7 +323,7 @@ def perform_synthesis(user, to_synthesize):
             "output" : output,
             "success" : build_success
         }
-        app.logger.info(f"{user}: Successfully ran synthesis script on file {to_synthesize}")
+        app.logger.info(f"{user}: Ran synthesis script on file {to_synthesize}")
     except Exception as error:
         app.logger.error(f"{user}: Error synthesizing file {to_synthesize} -> ", error)
         # TODO: send to frontend
@@ -361,18 +361,19 @@ def build(user):
     if pin_constraints == "":
         app.logger.error(f"{user}: Error getting pin constraints from config.toml")
 
+    output = ""
+
     try:
         with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
         
         output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
 
-        app.logger.info(f"{user}: Ran make on {makefile_path}. Output: f{output}")
         success = False
         if "Build successful" in output:
             success = True
 
         os.chmod(path=makefile_path, mode=0o660)
-        app.logger.info(f"{user}: Successfully ran make on project {directory}")
+        app.logger.info(f"{user}: Ran make on project {directory}")
     except Exception as error:
         app.logger.error(f"{user}: Error building project {directory} -> ", error)
         return redirect(url_for('index'))
@@ -391,7 +392,12 @@ def build(user):
             if (not out['success']):
                 app.logger.error(f"{user}: Can not synthesize netlist for project {directory}")
                 # TODO: send something to the frontend as well
-            
+        else:
+            app.logger.error(f"{user}: Error building project {directory}. Output: {output}")
+            return redirect(url_for('index'))
+            # TODO: send to frontend
+
+        
         # fix permissions
         for file in os.listdir(directory): 
             # directory
@@ -444,7 +450,7 @@ def generate_makefile(user, config):
                     entity = config["toplevel"][0 : config["toplevel"].index(".vhd")]
                 else:
                     entity = config["toplevel"]
-            app.logger.info(f"{user}: Successfully generated makefile string from config: {config}")
+            app.logger.info(f"{user}: Generated makefile string from config: {config}")
             return f"""
 ##########################################
 #                                        #
