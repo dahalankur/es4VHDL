@@ -2,6 +2,8 @@ import os
 import shutil
 import json
 import toml
+import logging
+from pathlib import Path
 import requests
 from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
@@ -10,19 +12,39 @@ from flask_htpasswd import HtPasswdAuth
 # TODO: vulnerability: if the user sends some other path in one of the GET requests, we will currently run the command for another user. We do not want this, so we want 
 # to check that the path being provided is a subdirectory of the user's home directory.
 
+#  --------- LOGGING INFO -----------
+
+# @app.route('/')
+# def default_route():
+#     """Default route"""
+#     app.logger.debug('this is a DEBUG message')
+#     app.logger.info('this is an INFO message')
+#     app.logger.warning('this is a WARNING message')
+#     app.logger.error('this is an ERROR message')
+#     app.logger.critical('this is a CRITICAL message')
+
+#  ------ END OF LOGGING INFO ---------
+
+
+
 default_msg = '''
 Welcome to ES4 VHDL online editor!
 
 Begin by creating a new project, or selecting an existing one!
+TODO list: finish project
 '''
 # TODO: add a link to help/documentation page in default_msg
 
 # TODO: create a separate config file for all flask configs
 app = Flask(__name__)
 app.config['FLASK_HTPASSWD_PATH'] = '.htpasswd'
-app.config['SECRET_KEY'] = os.urandom(16)
+app.config['SECRET_KEY'] = 'asdfjhkjh1i239ydskbKDHsagJHSDFGh1g23jbvJgjdgajsfjahsdDkakjsfh' # TODO: change this later; use a config file to store all flask config secrets
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
+
+gunicorn_logger = logging.getLogger('gunicorn.error')
+app.logger.handlers = gunicorn_logger.handlers
+app.logger.setLevel(gunicorn_logger.level)
 
 htpasswd = HtPasswdAuth(app)
 
@@ -30,11 +52,13 @@ htpasswd = HtPasswdAuth(app)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+# TODO: change this, simplify the workflow later when dealing with frontend
+# TODO: Update the size of the file tree and the editor window to be correct.
 def make_tree(path):
     tree = dict(name=os.path.basename(path), children=[], path="", dirname=path)
     try: lst = os.listdir(path)
     except OSError:
-        pass #ignore errors
+        pass # ignore errors TODO: not the very best practice is it? :)
     else:
         for name in lst:
             fn = os.path.join(path, name)
@@ -45,7 +69,6 @@ def make_tree(path):
                 tree['children'].append(dict(name=name, path=fn))
     return tree
 
-# TODO: Update the size of the file tree and the editor window to be correct.
 
 @app.route('/delete_file', methods = ['GET'])
 @htpasswd.required
@@ -54,12 +77,19 @@ def delete_file(user):
     to_delete = request.args.get('filename')
     if os.path.exists(path=to_delete):
         if not os.path.isfile(path=to_delete):
-            flash('Cannot delete non-file', 'error')
+            app.logger.error(f"{user}: Cannot delete non-file {to_delete}")
+            # TODO: send message to frontend about file not being able to be deleted
             return redirect(url_for('index'))
         # Delete the file
-        os.remove(to_delete)
+        try:
+            os.remove(to_delete)
+            app.logger.info(f"{user}: Successfully deleted file {to_delete}")
+        except Exception as error:
+            app.logger.error(f"{user}: Error deleting file {to_delete} -> ", error)
+            # TODO: send to frontend
     else:
-        flash('No file with the given name exists', 'error')
+        # TODO: send message to frontend about file not existing
+        app.logger.error(f"{user}: File {to_delete} does not exist")
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
@@ -71,12 +101,19 @@ def delete_folder(user):
     to_delete = request.args.get('current_dir')
     if os.path.exists(path=to_delete):
         if not os.path.isdir(to_delete):
-            flash('Cannot delete non-directory', 'error')
+            app.logger.error(f"{user}: Cannot delete non-folder {to_delete}")
+            # TODO: send message to frontend about folder not being able to be deleted
             return redirect(url_for('index'))
-        # Delete the file
-        shutil.rmtree(to_delete, ignore_errors=False, onerror=None)
+        # Delete the folder
+        try:
+            shutil.rmtree(to_delete, ignore_errors=False, onerror=None)
+            app.logger.info(f"{user}: Successfully deleted folder {to_delete}")
+        except Exception as error:
+            app.logger.error(f"{user}: Error deleting folder {to_delete} -> ", error)
+            # TODO: send to frontend
     else:
-        flash('No directory with the given name exists', 'error')
+        # TODO: send message to frontend about folder not existing
+        app.logger.error(f"{user}: Folder {to_delete} does not exist")
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
@@ -90,14 +127,21 @@ def new_folder(user):
     
     if os.path.exists(path=current_dir):
         if os.path.exists(path=new_dir):
-            flash('The directory with the given name already exists', 'error')
+            # TODO: send message to frontend about directory already existing
+            app.logger.error(f"{user}: Directory {new_dir} already exists")
             return redirect(url_for('index'))
         
+        try:
         # Create the new directory with appropriate permissions
-        os.mkdir(path=new_dir)
-        os.chmod(path=new_dir, mode=0o2775)
+            os.mkdir(path=new_dir)
+            os.chmod(path=new_dir, mode=0o2775)
+            app.logger.info(f"{user}: Successfully created directory {new_dir}")
+        except Exception as error:
+            app.logger.error(f"{user}: Error creating directory and/or changing permissions -> ", error)
+            # TODO: send to frontend
     else:
-        flash('The path to the current directory does not exist', 'error')
+        # TODO: send message to frontend about file not being able to be created
+        app.logger.error(f"{user}: Path to directory {new_dir} does not exist")
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
  
@@ -109,28 +153,34 @@ def new_project(user):
     projname = path + request.args.get('projname')
 
     if not os.path.exists(path=projname):
-        os.mkdir(path=projname)
-        os.chmod(path=projname, mode=0o2775)
-        # Make a new file "config.toml"
-        config_file = projname + "/" + "config.toml"
-        with open(config_file, "w") as f:
+        try:
+            os.mkdir(path=projname)
+            os.chmod(path=projname, mode=0o2775)
             
-            # TOML THINGY NOW TODO:
-            config_contents = f"""project = "{request.args.get('projname')}"
+            # Make a new file "config.toml"
+            config_file = projname + "/" + "config.toml"
+            with open(config_file, "w") as f:
+                config_contents = f"""
+project = "{request.args.get('projname')}"
 toplevel  = ""   # Place your toplevel entity here
 testbench = ""   # Place the name of your test bench here
 src       = []   # List all vhd files you need to build your project 
 
 # List your variable to FPGA pin-mappings here
 [pins]
-# var1 = 1
-# var2 = 32
-# clk  = 8
+# "var1" = 1
+# "var2" = 32
+# "clk"  = 8
 """
-            f.write(config_contents)
-        os.chmod(path=config_file, mode=0o660)
+                f.write(config_contents)
+            os.chmod(path=config_file, mode=0o660)
+            app.logger.info(f"{user}: Successfully created project {projname}")
+        except Exception as error:
+            app.logger.error(f"{user}: Error creating project and/or changing permissions -> ", error)
+            # TODO: send this to frontend
     else:
-        flash('The project already exists', 'error')
+        app.logger.error(f"{user}: Project {projname} already exists")
+        # TODO: send this to frontend
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
@@ -143,13 +193,20 @@ def new_file(user):
 
     if os.path.exists(path=current_dir):
         if os.path.exists(path=filename):
-            flash('The file with the given name already exists', 'error')
+            app.logger.error(f"{user}: File {filename} already exists")
+            # TODO: send to frontend
             return redirect(url_for('index'))
-        
-        open(filename, "w")
-        os.chmod(path=filename, mode=0o660)
+        try:
+            open(filename, "w")
+            os.chmod(path=filename, mode=0o660)
+            app.logger.info(f"{user}: Successfully created file {filename}")
+        except Exception as error:
+            # TODO: send to frontend
+            app.logger.error(f"{user}: Error creating file and/or changing permissions -> ", error)
+
     else:
-        flash('The specified folder does not exists', 'error')
+        app.logger.error(f"{user}: Directory {current_dir} does not exist")
+        # TODO: send to frontend
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
@@ -159,22 +216,27 @@ def new_file(user):
 @app.route('/')
 @htpasswd.required
 def index(user):
-    print(f"{user} has successfully logged in")
+    app.logger.info(f"{user}: Successfully logged in")
     path = os.path.expanduser(f'/h/{user}/.es4/')
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg)
 
-# TODO: make a 'log' function instead of print that writes to a log file or figure out where gunicorn logs are written to
 
 @app.route('/get_file', methods=["GET"])
 @htpasswd.required
 def get_file(user):
-    file_contents = open(request.args.get('filename').strip(), 'r').read()
-    data = {
-            "contents" : file_contents,
-        }
+    data = {"contents" : ""}
+    try:
+        filename = request.args.get('filename').strip()
+        file_contents = open(filename, 'r').read()
+        data = {
+                "contents" : file_contents,
+            }
+        app.logger.info(f"{user}: Successfully opened {filename}")
+    except Exception as error:
+        app.logger.error(f"{user}: Error opening file {filename} -> ", error)
+        # TODO: send to frontend
     return jsonify(data)
 
-#TODO: use sbell's netlist template
 
 @app.route('/save_file', methods=["POST", "GET"])
 @htpasswd.required
@@ -182,10 +244,15 @@ def save_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     if request.method == 'POST':
         body = request.json
-
+        filename = body["current_file"]
         # Write the data to the file
-        with open(body["current_file"], "w") as file:
-            file.write(body["file_contents"])
+        try:
+            with open(filename, "w") as file:
+                file.write(body["file_contents"])
+            app.logger.info(f"{user}: Saved data to {filename}")
+        except Exception as error:
+            app.logger.error(f"{user}: Error saving file {filename} -> ", error)
+            # TODO: send to frontend
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
@@ -216,7 +283,29 @@ def analyze_ghdl_file(user):
     
     return jsonify(data)
 
+@app.route('/analyze_toml_file', methods=['GET'])
+@htpasswd.required
+def analyze_toml_file(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    to_analyze = request.args.get('filename')
+    if not os.path.exists(path=to_analyze):
+        flash("No such file exists")
+        return redirect(url_for('index'))
+
+    # build with ghdl in their directory (to prevent race conditions when multiple users are compiling)
+    output = safe_run(["echo", "todo", to_analyze], cwd=os.path.dirname(to_analyze),timeout=5).decode("utf-8")
+    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
+
+    data = {
+            "output" : output,
+            "success" : build_success
+        }
+    
+    return jsonify(data)
+
+
 def perform_synthesis(to_synthesize):
+    # TODO: use sbell's netlist template
     if not os.path.exists(path=to_synthesize):
         flash("No such file exists")
         return redirect(url_for('index'))
@@ -237,7 +326,8 @@ def perform_synthesis(to_synthesize):
     # set GHDL_PREFIX env variable 
     os.environ["GHDL_PREFIX"] = f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
     output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
-    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
+    synthesized_netlist = Path(to_synthesize).stem  +  "-netlist.svg"
+    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), synthesized_netlist))
     
     data = {
         "output" : output,
@@ -250,7 +340,7 @@ def perform_synthesis(to_synthesize):
 @app.route('/synthesize_file', methods=['GET'])
 @htpasswd.required
 def synthesize_file(user):
-    return perform_synthesis(request.args.get('filename'))
+    return perform_synthesis(request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
 
 
 @app.route("/build", methods=['GET'])
@@ -281,8 +371,6 @@ def build(user):
     
     # TODO: return success status to the frontend somehow
 
-    # print("Build status: ", success)
-    print("MAKEFILE PATH: ", makefile_path)
     os.chmod(path=makefile_path, mode=0o660)
     
     # from config.toml, get the toplevel module
@@ -293,12 +381,11 @@ def build(user):
 
     # after build is complete, synthesize the top module
     if success and toplevel != "":
-        out = perform_synthesis(directory + "/" + toplevel)
-
-        # toml to dict and check for success 
-        out = toml.loads(str(out.data)) # TODO: error is being thrown from here, investigate later
-        # TODO: check success status later
-
+        out = json.loads(perform_synthesis(directory + "/" + toplevel).data)
+        if (not out['success']):
+            print("Error: Can not synthesize the netlist. Check the logs for more details.")
+            # TODO: send something to the frontend as well
+            
         try:
             # fix permissions
             for file in os.listdir(directory): 
@@ -309,7 +396,7 @@ def build(user):
                     os.chmod(path=os.path.join(directory, file), mode=0o660)
         except Exception as error:
             print("Error changing permission (likely that the owner is not server): ", error)
-        # TODO: show build output in the box! return it as a response
+        # TODO: send to frontend
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 def generate_pinconstraint(config):
@@ -320,7 +407,11 @@ def generate_pinconstraint(config):
     else:
         # read from config.toml the pin mappings
         with open(config, "r") as f:
-            config = toml.load(f)
+            try:
+                config = toml.load(f)
+            except Exception as exception:
+                print("ERROR", exception)
+                return "Error: " +  exception
             pins = config["pins"]
             pins_str = ""
             for varName, pinNumber in pins.items():

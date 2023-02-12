@@ -3,8 +3,13 @@
 
 - show "loading" or some other message when something is being done in the background
 - make command + F work to find stuff
-- error messages for everything!! build, synthesis, file/folder creation, pins, etc. etc.!!!
+- error messages for everything!! build, file/folder creation, pins, etc. etc.!!!
     - config errors => report in output
+
+
+- FRONTEND ERROR HANDLING! Make sure the backend error messages align with what's shown on the frontend and vice-versa.
+    - perform_synthesis() --> in build and synthesize_file --> whether or not synthesis was successful
+
 
 -> flash messages appearing (OR create our own flashing system)
 -> fix reload issue! New project should automatically add to the DOM.
@@ -16,6 +21,7 @@
     -> Correlate between current location, and the files (a lot of these need this to be solved.)
 -> Download the bitstream to device
 
+// After deployment, change add_user and give group exec permissions only to es4vhdladmin group
 
 // Not important (TODO later)
 -> Choose colors for the background
