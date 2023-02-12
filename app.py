@@ -389,7 +389,7 @@ def build(user):
         if success and toplevel != "":
             out = json.loads(perform_synthesis(user, directory + "/" + toplevel).data)
             if (not out['success']):
-                print("Error: Can not synthesize the netlist. Check the logs for more details.")
+                app.logger.error(f"{user}: Can not synthesize netlist for project {directory}")
                 # TODO: send something to the frontend as well
             
         # fix permissions
@@ -399,7 +399,6 @@ def build(user):
                 os.chmod(path=os.path.join(directory, file), mode=0o2775)
             else:
                 os.chmod(path=os.path.join(directory, file), mode=0o660)
-        # TODO: send to frontend
     except Exception as error:
         # TODO: send to frontend
         app.logger.error(f"{user}: Error performing synthesis on top module {toplevel} and/or changing permissions -> ", error)
