@@ -359,7 +359,7 @@ def build(user):
     # generate pin constraints file based on config.toml
     pin_constraints = generate_pinconstraint(user, f'{directory}/config.toml')
     if pin_constraints == "":
-        app.logger.error(f"{user}: Error getting pin constraints from config.toml")
+        app.logger.warning(f"{user}: Error getting pin constraints from config.toml")
 
     output = ""
 
