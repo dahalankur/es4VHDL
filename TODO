@@ -6,10 +6,12 @@
 - error messages for everything!! build, file/folder creation, pins, etc. etc.!!!
     - config errors => report in output
 
+- Theme (dark, light mode)
+- Validate TOML file button attempts to validate current file, regardless of type.
 
 - FRONTEND ERROR HANDLING! Make sure the backend error messages align with what's shown on the frontend and vice-versa.
     - perform_synthesis() --> in build and synthesize_file --> whether or not synthesis was successful
-
+-> Building clearly shows result (success/failure/new files made)
 
 -> flash messages appearing (OR create our own flashing system)
 -> fix reload issue! New project should automatically add to the DOM.
@@ -33,3 +35,4 @@
 
 --- bugs 
 -> CONTROL + Z on a new file goes to the old file.
+-> New file (duplicate) says "something is wrong" 

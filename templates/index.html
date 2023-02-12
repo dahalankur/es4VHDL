@@ -13,18 +13,15 @@
         fetch('/new_project?' + new URLSearchParams({
             projname: name.trim()
         })).then(response => {
-            if (response.status != 200) {
+            // status code 200
+            // check if redirected is true
+            // if so, we intended to "flash" an error from the backend
+            if (response.redirected) {
                 alert("An error occurred while creating the project. Please check that the project you are trying to create does not already exist.")
             } else {
-                // status code 200
-                // check if redirected is true
-                // if so, we intended to "flash" an error from the backend
-                if (response.redirected) {
-                    alert("error: something is wrong")
-                } else {
-                    location.reload(); // refresh on successful response from the backend
-                }
+                location.reload(); // refresh on successful response from the backend
             }
+
         });
     }
     // TODO: create an exapand all button to expand all directories in the tree
@@ -145,6 +142,10 @@
     }
 
     function save_file() {
+        // if current file ends with ".toml", run the toml validator.
+        if (current_file.endsWith(".toml")) {
+            validateToml();
+        }
         var editor = ace.edit("editor");
         editor.session.getUndoManager().markClean();
         document.getElementById("save_indicator").hidden = true;
@@ -200,15 +201,19 @@
         console.log("validateToml");
         if (current_file) {
             // save the file and send the filename over to the backend
-            save_file()
             const toml_data = editor.getValue()
             console.log(toml_data);
 
             try {
                 var data = toml.parse(toml_data);
-                validate_specific_format_toml(data);
-                output_window.style.border = "1px solid green";
-                output_window.innerHTML = "Output: <pre style=\"color: green\">Config file syntax correct</pre>";
+                const warnings = validate_specific_format_toml(data);
+                if (!warnings) {
+                    output_window.style.border = "1px solid green";
+                    output_window.innerHTML = "Output: <pre style=\"color: green\">Config file syntax correct</pre>";
+                } else {
+                    output_window.style.border = "1px solid #808000";
+                    output_window.innerHTML = "Output: <pre style=\"color: black\">" + warnings + "</pre>";
+                }
             } catch (err) {
                 if (err.line && err.column) {
                     var error_message = 'Line ' + err.line + ', column ' + err.column + ': ' + err;
@@ -229,8 +234,10 @@
     // Makes sure the toml file provided by a student matches exactly
     // that which we depend our Makefile on.
     function validate_specific_format_toml(toml_data) {
+        let warnings = "";
         // Validate the needed fields fields exist
         let { pins, project, toplevel, src } = toml_data;
+        console.log(toml_data, toplevel);
 
         // Validate that the pins table exists, and each pin is unique
         if (!pins) {
@@ -244,37 +251,49 @@
                 throw new Error(`The variable "${pin_mapping}" cannot be assigned to pin "${pins[pin_mapping]}" as the pin is already mapped to.\nPlease update your config.toml file.`);
             }
         }
-        
+
         // Project 
-        if (!project) {
+
+        // Check that the variable is set (empty string is set)
+        if (!project && typeof (project) != "string") {
             throw new Error(`The 'project' field is missing. Please add this variable to the "config.toml" file`);
         }
-        if (typeof(project) != "string") {
+        if (typeof (project) != "string") {
             throw new Error('The "project" field must be a string. Please change the variable type in the "config.toml" file.');
         }
+        if (project == "") {
+            warnings += 'Warn: The "project" variable is an empty string in "config.toml"\n';
+        }
         // Toplevel
-        if (!toplevel) {
+        if (!toplevel && typeof (toplevel) != "string") {
             throw new Error(`The 'toplevel' field is missing. Please add this variable to the "config.toml" file`);
         }
-        if (typeof(toplevel) != "string") {
+        if (typeof (toplevel) != "string") {
             throw new Error('The "toplevel" field must be a string. Please change the variable type in the "config.toml" file.');
         }
-        // Source
+        if (toplevel == "") {
+            warnings += 'Warn: The "toplevel" variable is an empty string in "config.toml"\n';
+        }
+        // Source File List
         if (!src) {
             throw new Error(`The 'src' field is missing. Please add this variable to the "config.toml" file`);
         }
         if (!Array.isArray(src)) {
             throw new Error('The "src" field must be a list. Please change the variable type in the "config.toml" file.');
         }
-
+        if (src.length == 0) {
+            warnings += 'Warn: The "src" list is empty in "config.toml"\n';
+        }
+        return warnings;
     }
-        
+
 
     function build() {
         if (current_dir) {
             fetch('/build?' + new URLSearchParams({
                 directory: current_dir
             }));
+            location.reload();
         } else {
             alert("Please select a project to build from the directory tree");
         }
@@ -322,7 +341,7 @@
             <button id="Analyze" onclick="analyze()">Analyze</button>
             <button id="Synthesize" onclick="synthesize()">Synthesize</button>
             <button id="Build" onclick="build()">Build</button>
-            <button id="ValidateTOML" onclick="validateToml()">Validate TOML file</button>
+            <button id="ValidateTOML" onclick="save_file(); validateToml()">Validate TOML file</button>
         </div>
     </div>
     <div class="bottom-box">

@@ -160,10 +160,9 @@ def new_project(user):
             # Make a new file "config.toml"
             config_file = projname + "/" + "config.toml"
             with open(config_file, "w") as f:
-                config_contents = f"""
-project = "{request.args.get('projname')}"
+                config_contents = f"""project = "{request.args.get('projname')}"
 toplevel  = ""   # Place your toplevel entity here
-testbench = ""   # Place the name of your test bench here
+testbench = ""   # (Optional) Place the name of your test bench here
 src       = []   # List all vhd files you need to build your project 
 
 # List your variable to FPGA pin-mappings here
@@ -265,82 +264,76 @@ def analyze_ghdl_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     to_analyze = request.args.get('filename')
     if not os.path.exists(path=to_analyze):
-        flash("No such file exists")
+        app.logger.error(f"{user}: File {to_analyze} does not exist")
+        # TODO: send to frontend
         return redirect(url_for('index'))
 
-    # remove work-obj08.cf if it exists
-    if os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf")):
-        os.remove(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
+    data = {"output" : "", "success" : False}
     
-    # build with ghdl in their directory (to prevent race conditions when multiple users are compiling)
-    output = safe_run(["ghdl", "-a", "-fsynopsys", "--std=08", to_analyze], cwd=os.path.dirname(to_analyze),timeout=5).decode("utf-8")
-    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
-
-    data = {
-            "output" : output,
-            "success" : build_success
-        }
+    try:
+        # remove work-obj08.cf if it exists
+        if os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf")):
+            os.remove(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
     
-    return jsonify(data)
-
-@app.route('/analyze_toml_file', methods=['GET'])
-@htpasswd.required
-def analyze_toml_file(user):
-    path = os.path.expanduser(f'/h/{user}/.es4/')
-    to_analyze = request.args.get('filename')
-    if not os.path.exists(path=to_analyze):
-        flash("No such file exists")
-        return redirect(url_for('index'))
-
-    # build with ghdl in their directory (to prevent race conditions when multiple users are compiling)
-    output = safe_run(["echo", "todo", to_analyze], cwd=os.path.dirname(to_analyze),timeout=5).decode("utf-8")
-    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
-
-    data = {
-            "output" : output,
-            "success" : build_success
-        }
+        # build with ghdl in their directory (to prevent race conditions when multiple users are compiling)
+        output = safe_run(["ghdl", "-a", "-fsynopsys", "--std=08", to_analyze], cwd=os.path.dirname(to_analyze),timeout=5).decode("utf-8")
+        build_success = os.path.exists(path=os.path.join(os.path.dirname(to_analyze), "work-obj08.cf"))
+        data = {
+                "output" : output,
+                "success" : build_success
+            }
+        app.logger.info(f"{user}: Successfully ran analysis on file {to_analyze}")
+    except Exception as error:
+        app.logger.error(f"{user}: Error analyzing file {to_analyze} -> ", error)
+        # TODO: send to frontend
     
     return jsonify(data)
 
 
-def perform_synthesis(to_synthesize):
-    # TODO: use sbell's netlist template
+def perform_synthesis(user, to_synthesize):
+    # TODO: use sbell's netlist template (add stuff to static later, look at his vhdlweb repo for details)
     if not os.path.exists(path=to_synthesize):
-        flash("No such file exists")
+        app.logger.error(f"{user}: File {to_synthesize} does not exist")
+        # TODO: send to frontend
         return redirect(url_for('index'))
 
-    # remove work-obj08.cf if it exists
-    if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf")):
-        os.remove(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf"))
-    
-    # remove an svg file if it exists
-    if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg")):
-        os.remove(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
+    data = {"output" : "", "success" : False}
+
+    try:
+        # remove work-obj08.cf if it exists
+        if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf")):
+            os.remove(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf"))
         
+        # remove an svg file if it exists
+        if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg")):
+            os.remove(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
+            
 
-    # call synthesize.sh script with the filename as an argument
-    # get python script directory
-    script_dir = os.path.dirname(os.path.realpath(__file__))
+        # call synthesize.sh script with the filename as an argument
+        # get python script directory
+        script_dir = os.path.dirname(os.path.realpath(__file__))
 
-    # set GHDL_PREFIX env variable 
-    os.environ["GHDL_PREFIX"] = f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
-    output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
-    synthesized_netlist = Path(to_synthesize).stem  +  "-netlist.svg"
-    build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), synthesized_netlist))
-    
-    data = {
-        "output" : output,
-        "success" : build_success
-    }
+        # set GHDL_PREFIX env variable 
+        os.environ["GHDL_PREFIX"] = f"{script_dir}/bin/fpga-toolchain/lib/ghdl/"
+        output = safe_run([f"{script_dir}/bin/synthesize.sh", to_synthesize], cwd=os.path.dirname(to_synthesize),timeout=5).decode("utf-8")
+        synthesized_netlist = Path(to_synthesize).stem  +  "-netlist.svg"
+        build_success = os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), synthesized_netlist))
 
+        data = {
+            "output" : output,
+            "success" : build_success
+        }
+        app.logger.info(f"{user}: Successfully ran synthesis script on file {to_synthesize}")
+    except Exception as error:
+        app.logger.error(f"{user}: Error synthesizing file {to_synthesize} -> ", error)
+        # TODO: send to frontend
     return jsonify(data)
 
 
 @app.route('/synthesize_file', methods=['GET'])
 @htpasswd.required
 def synthesize_file(user):
-    return perform_synthesis(request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
+    return perform_synthesis(user, request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
 
 
 @app.route("/build", methods=['GET'])
@@ -349,93 +342,111 @@ def build(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     directory = request.args.get('directory')
     makefile_path = f'{directory}/Makefile'
-
+    
     # generate Makefile based on config.toml
-    makefile = generate_makefile(f'{directory}/config.toml')
-    with open(makefile_path, "w") as f: f.write(makefile)
+    makefile = generate_makefile(user, f'{directory}/config.toml')
+    if makefile == "":
+        app.logger.error(f"{user}: Error getting makefile contents from config.toml")
+        return redirect(url_for('index'))
     
+    try:
+        with open(makefile_path, "w") as f: f.write(makefile)
+    except Exception as error:
+        app.logger.error(f"{user}: Error writing Makefile contents to {makefile_path} -> ", error)
+        # TODO: send to frontend
+        return redirect(url_for('index'))
+        
     # generate pin constraints file based on config.toml
-    pin_constraints = generate_pinconstraint(f'{directory}/config.toml')
-    
-    with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
-    
+    pin_constraints = generate_pinconstraint(user, f'{directory}/config.toml')
+    if pin_constraints == "":
+        app.logger.error(f"{user}: Error getting pin constraints from config.toml")
 
-    output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
-    
+    try:
+        with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
+        
+        output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
 
-    print(output)
-    
-    success = False
-    if "Build successful" in output:
-        success = True
-    
-    # TODO: return success status to the frontend somehow
+        app.logger.info(f"{user}: Ran make on {makefile_path}. Output: f{output}")
+        success = False
+        if "Build successful" in output:
+            success = True
 
-    os.chmod(path=makefile_path, mode=0o660)
+        os.chmod(path=makefile_path, mode=0o660)
+        app.logger.info(f"{user}: Successfully ran make on project {directory}")
+    except Exception as error:
+        app.logger.error(f"{user}: Error building project {directory} -> ", error)
+        return redirect(url_for('index'))
+        # TODO: send to frontend
     
     # from config.toml, get the toplevel module
     toplevel = ""
-    with open(f'{directory}/config.toml', 'r') as f:
-        config = toml.load(f)
-        toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
+    try:
+        with open(f'{directory}/config.toml', 'r') as f:
+            config = toml.load(f)
+            toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
 
-    # after build is complete, synthesize the top module
-    if success and toplevel != "":
-        out = json.loads(perform_synthesis(directory + "/" + toplevel).data)
-        if (not out['success']):
-            print("Error: Can not synthesize the netlist. Check the logs for more details.")
-            # TODO: send something to the frontend as well
+        # after build is complete, synthesize the top module
+        if success and toplevel != "":
+            out = json.loads(perform_synthesis(user, directory + "/" + toplevel).data)
+            if (not out['success']):
+                print("Error: Can not synthesize the netlist. Check the logs for more details.")
+                # TODO: send something to the frontend as well
             
-        try:
-            # fix permissions
-            for file in os.listdir(directory): 
-                # directory
-                if os.path.isdir(os.path.join(directory, file)):
-                    os.chmod(path=os.path.join(directory, file), mode=0o2775)
-                else:
-                    os.chmod(path=os.path.join(directory, file), mode=0o660)
-        except Exception as error:
-            print("Error changing permission (likely that the owner is not server): ", error)
+        # fix permissions
+        for file in os.listdir(directory): 
+            # directory
+            if os.path.isdir(os.path.join(directory, file)):
+                os.chmod(path=os.path.join(directory, file), mode=0o2775)
+            else:
+                os.chmod(path=os.path.join(directory, file), mode=0o660)
         # TODO: send to frontend
+    except Exception as error:
+        # TODO: send to frontend
+        app.logger.error(f"{user}: Error performing synthesis on top module {toplevel} and/or changing permissions -> ", error)
+        return redirect(url_for('index'))
+
+    app.logger.info(f"{user}: Succesfully ran build script on {directory}")
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
-def generate_pinconstraint(config):
-    # check if config file exists
+def generate_pinconstraint(user, config):
     if not os.path.exists(path=config):
-        flash("config.toml does not exist")
-        return redirect(url_for('index'))
+        app.logger.error(f"{user}: File {config} does not exist")
+        # TODO: send to frontend
+        return ""
     else:
-        # read from config.toml the pin mappings
-        with open(config, "r") as f:
-            try:
+        # read the pin mappings from config.toml
+        pins_str = ""
+        try:
+            with open(config, "r") as f:
                 config = toml.load(f)
-            except Exception as exception:
-                print("ERROR", exception)
-                return "Error: " +  exception
             pins = config["pins"]
-            pins_str = ""
             for varName, pinNumber in pins.items():
                 pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {{{varName}}}]\n"
-            
-            return pins_str
+            app.logger.info(f"{user}: Succesfully generated pin constraints from config: {config}")
+        except Exception as error:
+            # TODO: send to frontend
+            app.logger.error(f"{user}: Error generating pin constraints from config: {config} -> ", error)
+            return ""
+        return pins_str
 
-def generate_makefile(config):
+def generate_makefile(user, config):
     # check if config file exists
     if not os.path.exists(path=config):
-        flash("config.toml does not exist")
-        return redirect(url_for('index'))
+        app.logger.error(f"{user}: File {config} does not exist")
+        return ""
     else:
         # read from config.toml the files to compile
-        with open(config, "r") as f:
-            config = toml.load(f)
-            toplevel_src = config["toplevel"] if config["toplevel"].endswith(".vhd") else config["toplevel"] + ".vhd"
-            src_files = " ".join(config["src"]) + " " + toplevel_src
-            if config["toplevel"].endswith(".vhd"):
-                entity = config["toplevel"][0 : config["toplevel"].index(".vhd")]
-            else:
-                entity = config["toplevel"]
-    
-        return f"""
+        try: 
+            with open(config, "r") as f:
+                config = toml.load(f)
+                toplevel_src = config["toplevel"] if config["toplevel"].endswith(".vhd") else config["toplevel"] + ".vhd"
+                src_files = " ".join(config["src"]) + " " + toplevel_src
+                if config["toplevel"].endswith(".vhd"):
+                    entity = config["toplevel"][0 : config["toplevel"].index(".vhd")]
+                else:
+                    entity = config["toplevel"]
+            app.logger.info(f"{user}: Successfully generated makefile string from config: {config}")
+            return f"""
 ##########################################
 #                                        #
 #       Auto generated Makefile          #
@@ -454,9 +465,13 @@ all:
 \t@rm -rf wave-top.ghw work-obj08.cf
 \t@echo 'Build successful'
 """
+        except Exception as error:
+            app.logger.error(f"{user}: Error generating Makefile from config: {config} -> ", error)
+            # TODO: send to backend
+            return ""
 
-# TODO: use safe_run for synthesis
-    
+# TODO: use safe_run for synthesis and build and other external calls
+
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
