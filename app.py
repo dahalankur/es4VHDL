@@ -410,7 +410,7 @@ def build(user):
         app.logger.error(f"{user}: Error performing synthesis on top module {toplevel} and/or changing permissions -> ", error)
         return redirect(url_for('index'))
 
-    app.logger.info(f"{user}: Succesfully ran build script on {directory}")
+    app.logger.info(f"{user}: Ran build script on {directory}")
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 def generate_pinconstraint(user, config):
@@ -427,7 +427,7 @@ def generate_pinconstraint(user, config):
             pins = config["pins"]
             for varName, pinNumber in pins.items():
                 pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {{{varName}}}]\n"
-            app.logger.info(f"{user}: Succesfully generated pin constraints from config: {config}")
+            app.logger.info(f"{user}: Generated pin constraints from config: {config}")
         except Exception as error:
             # TODO: send to frontend
             app.logger.error(f"{user}: Error generating pin constraints from config: {config} -> ", error)
