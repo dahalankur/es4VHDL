@@ -37,8 +37,9 @@ Begin by creating a new project, or selecting an existing one!
 
 # TODO: create a separate config file for all flask configs
 app = Flask(__name__)
+# TODO: change this later; use a config file to store all flask config secrets
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config['FLASK_HTPASSWD_PATH'] = '.htpasswd'
-app.config['SECRET_KEY'] = 'asdfjhkjh1i239ydskbKDHsagJHSDFGh1g23jbvJgjdgajsfjahsdDkakjsfh' # TODO: change this later; use a config file to store all flask config secrets
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 
@@ -183,18 +184,25 @@ src       = []   # List all vhd files you need to build your project
         return redirect(url_for('index'))
     return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
-@app.route('/new_file', methods = ['GET'])
+@app.route('/new_file', methods = ['POST'])
 @htpasswd.required
 def new_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    current_dir = request.args.get('current_dir')
-    filename = current_dir + "/" + request.args.get('filename')
+    body = request.json
+    current_dir= body['current_dir']
+    filename = current_dir + "/" + body['filename']
 
+    response = {"contents" : "", "success" : False}
+    
     if os.path.exists(path=current_dir):
         if os.path.exists(path=filename):
-            app.logger.error(f"{user}: File {filename} already exists")
+            error_msg = f"File {filename} already exists"
+            app.logger.error(f"{user}: {error_msg}")
             # TODO: send to frontend
-            return redirect(url_for('index'))
+            response = {"contents" : error_msg, "success" : False}
+            # flash('DUPLICATE FILE!!! DUH')
+            # return redirect(url_for('index'))
+            return jsonify(response)
         try:
             open(filename, "w")
             os.chmod(path=filename, mode=0o660)
@@ -202,12 +210,16 @@ def new_file(user):
         except Exception as error:
             # TODO: send to frontend
             app.logger.error(f"{user}: Error creating file and/or changing permissions -> ", error)
-
     else:
         app.logger.error(f"{user}: Directory {current_dir} does not exist")
         # TODO: send to frontend
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+        # return redirect(url_for('index'))
+        response = {"success": False, "contents": f"{user}: Directory {current_dir} does not exist"}
+        return jsonify(response)
+    tree = make_tree(path)
+    return jsonify({"success": True, "contents": tree})
+    
+    # return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 
@@ -237,22 +249,22 @@ def get_file(user):
     return jsonify(data)
 
 
-@app.route('/save_file', methods=["POST", "GET"])
+@app.route('/save_file', methods=["POST"])
 @htpasswd.required
 def save_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    if request.method == 'POST':
-        body = request.json
-        filename = body["current_file"]
-        # Write the data to the file
-        try:
-            with open(filename, "w") as file:
-                file.write(body["file_contents"])
-            app.logger.info(f"{user}: Saved data to {filename}")
-        except Exception as error:
-            app.logger.error(f"{user}: Error saving file {filename} -> ", error)
-            # TODO: send to frontend
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+    body = request.json
+    filename = body["current_file"]
+    # Write the data to the file
+    try:
+        with open(filename, "w") as file:
+            file.write(body["file_contents"])
+        app.logger.info(f"{user}: Saved data to {filename}")
+    except Exception as error:
+        app.logger.error(f"{user}: Error saving file {filename} -> ", error)
+        # TODO: send to frontend
+    return jsonify({"contents": "Saved file", "success" : True})
+#    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 '''

@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+
 <!-- TODO: show flashed message somewhere!!! -->
 <!-- TODO: add directory icons besides directories, and file icons besides files in the tree! also add an "expand all" button -->
 <script>
@@ -26,33 +27,42 @@
     }
     // TODO: create an exapand all button to expand all directories in the tree
     function new_file() {
+        if (!current_dir) {
+            alert("Please select a parent folder for the new file");
+        }
         if (current_dir) {
             var name = ""
             while (name.trim() == "") {
                 name = prompt("Please provide a valid file name");
             }
-            fetch('/new_file?' + new URLSearchParams({
-                filename: name.trim(),
-                current_dir: current_dir
-            }))
-                .then(response => {
-                    if (response.status != 200) {
-                        alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
-                    } else {
-                        alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
-                        // status code 200
-                        // check if redirected is true
-                        // if so, we intended to "flash" an error from the backend
-                        if (response.redirected) {
-                            alert("error: something is wrong")
-                        } else {
-                            location.reload(); // refresh on successful response from the backend
-                        }
+            fetch('/new_file', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename:  name.trim(),
+                    "current_dir": current_dir
+                })})
+                .then(response => { 
+                 return response.json()
+                }).then(data => {
+                    if (data.success) {
+                        // console.log(data.contents);
+                        //document.treeContainer.innerHTML = tree
+                        maketree(data.contents);
+                    }
+                    else {
+                        alert(data.contents);
                     }
                 });
-
-        } else {
-            alert("Please select a parent folder for the new file");
+                     // await response.json();
+                    // if (response.redirected) {
+                    //     alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
+                    // } else {
+                    //     // location.reload(); // refresh on successful response from the backend
+                    // }
+                
         }
     }
 
@@ -67,17 +77,13 @@
                 current_dir: current_dir
             }))
                 .then(response => {
-                    if (response.status != 200) {
-                        alert("An error occurred while creating the folder. Please check that the folder you are trying to create does not already exist.")
-                    } else {
-                        // status code 200
-                        // check if redirected is true
-                        // if so, we intended to "flash" an error from the backend
+                    console.log(response.text);
                         if (response.redirected) {
-                            alert("error: something is wrong")
+                            alert("Something went wrong (TODO)");
+                            // console.log(response.text);
                         } else {
-                            location.reload(); // refresh on successful response from the backend
-                        }
+                            // location.reload(); // refresh on successful response from the backend
+                      
                     }
                 });
         } else {
@@ -148,7 +154,6 @@
             validateToml();
         }
         var editor = ace.edit("editor");
-        editor.session.getUndoManager().markClean();
         document.getElementById("save_indicator").hidden = true;
         file_contents = editor.getValue()
         if (current_file) {
@@ -161,6 +166,10 @@
                     "file_contents": file_contents,
                     "current_file": current_file
                 })
+            }).then(response => {
+                if (response.ok) {
+                    editor.session.getUndoManager().markClean();
+                }
             });
         }
         else {
@@ -424,7 +433,7 @@
         var current_file = null;
         var current_dir = null; // string pathname
         var selected_dir = null; // document object
-
+        function addTreeListeners() {
         for (i = 0; i < toggler.length; i++) {
             toggler[i].addEventListener("click", function () {
                 nested = this.parentElement.querySelector(".nested");
@@ -512,8 +521,8 @@
                     selected_dir = this;
                 }
             });
-        }
-
+        }}
+        addTreeListeners();
         // TODO: how to allow people to move about directories?
 
         // command S implementation: https://www.thatsoftwaredude.com/content/8783/how-to-ctrl--s-to-save-in-javascript
@@ -539,6 +548,39 @@
 
     </script>
 
+<script>
+    
+function maketree(treeStructure) {
+    dirname = treeStructure.dirname;
+
+    let div = document.getElementById("myUL");
+    div.innerHTML = "<h1>File Tree</h1><ul>"
+        
+    function makeChildren(node) {
+        let str = "";
+        console.log(node.length);
+        for (i = 0; i < node.length; i++) {
+            let item = node[i]
+            str += '<li class="file-tree-file"> <span class="caret" data-pathname="' 
+                + item.path + '" data-dirname="' + item.dirname 
+                + '">' + item.name + '</span>'
+            if (item.children && item.children.length != 0) {
+                str += `<ul class="nested" oncontextmenu="window.alert('TODO')">`
+                str += makeChildren(item.children)
+                str += `</ul>`;
+            }
+            str += "</li>"
+            
+        }
+        return str;
+    }
+
+    console.log(makeChildren(treeStructure.children));
+    div.innerHTML += makeChildren(treeStructure.children);
+    div.innerHTML += "</ul>";
+    addTreeListeners();
+}
+</script>
 
     <!-- Script that allows us to validate TOML on button press -->
     <script src="{{url_for('static', filename='toml-validate.js')}}"></script>
