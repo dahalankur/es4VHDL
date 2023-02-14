@@ -575,6 +575,8 @@ function maketree(treeStructure) {
         return str;
     }
 
+    // TODO: fake the "click" event so the tree is expanded before the page is rendered
+
     console.log(makeChildren(treeStructure.children));
     div.innerHTML += makeChildren(treeStructure.children);
     div.innerHTML += "</ul>";
