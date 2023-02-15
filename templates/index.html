@@ -370,7 +370,7 @@
         </div>
     </div>
     <div class="bottom-box">
-<!-- 
+
         <div class="navbar-side" id="navbar-side">
             <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
             <button class="button-40" id="New_File" onclick="new_file()">New File</button>
@@ -381,7 +381,7 @@
             <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
             <button class="button-40" id="Build" onclick="build()">Build</button>
             <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
-        </div> -->
+        </div>
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
@@ -496,6 +496,7 @@
                                     if (pathname.endsWith(".svg")) {
                                         // hide the editor
                                         document.getElementById("editor").style.display = "none";
+                                        
 
                                         // show the svg
                                         document.getElementById("netlist-svg").style.display = "block";
@@ -503,6 +504,7 @@
 
                                         // console.log(document.getElementById("editor").innerHTML);
                                         document.getElementById("netlist-svg").innerHTML = json.contents;
+                                        document.getElementById("netlist-svg").style.backgroundColor = "lightgray";
                                     } else {
                                         // replace inner html with ace editor and set mode to vhdl and fill with contents
                                         // Show the editor

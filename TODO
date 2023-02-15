@@ -47,3 +47,4 @@ changing this anyway.
 --- bugs 
 -> CONTROL + Z on a new file goes to the old file.
 -> New file (duplicate) says "something is wrong" -> need to solidify frontend error checking
+-> Output window should not be scrollable left to right.
