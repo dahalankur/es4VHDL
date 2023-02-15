@@ -41,11 +41,12 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    filename:  name.trim(),
+                    filename: name.trim(),
                     "current_dir": current_dir
-                })})
-                .then(response => { 
-                 return response.json()
+                })
+            })
+                .then(response => {
+                    return response.json()
                 }).then(data => {
                     if (data.success) {
                         // console.log(data.contents);
@@ -56,13 +57,13 @@
                         alert(data.contents);
                     }
                 });
-                     // await response.json();
-                    // if (response.redirected) {
-                    //     alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
-                    // } else {
-                    //     // location.reload(); // refresh on successful response from the backend
-                    // }
-                
+            // await response.json();
+            // if (response.redirected) {
+            //     alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
+            // } else {
+            //     // location.reload(); // refresh on successful response from the backend
+            // }
+
         }
     }
 
@@ -78,12 +79,12 @@
             }))
                 .then(response => {
                     console.log(response.text);
-                        if (response.redirected) {
-                            alert("Something went wrong (TODO)");
-                            // console.log(response.text);
-                        } else {
-                            // location.reload(); // refresh on successful response from the backend
-                      
+                    if (response.redirected) {
+                        alert("Something went wrong (TODO)");
+                        // console.log(response.text);
+                    } else {
+                        // location.reload(); // refresh on successful response from the backend
+
                     }
                 });
         } else {
@@ -188,10 +189,13 @@
                 .then(function (response) { return response.json(); })
                 .then(json => {
                     output_window = document.getElementById("output_window")
-                    output_window.innerHTML = "Output: <pre>" + json.output + "</pre>" // TODO: change this, and handle errors
+
+                    output_window.innerHTML = `Output: <pre style="color: white">` + json.output + "</pre>" // TODO: change this, and handle errors
+                    // TODO: change color of border based on json response
+                    output_window.style.border = "1px solid white";
 
                     // if (json.output.trim() != "" && !json.success) {
-                    //     output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
+                    //     output_window.innerHTML = "Output: <pre style="color: white">" + json.output + "</pre>"
                     //     output_window.style.border = "1px solid red";
                     // } else {
                     //     output_window.style.border = "1px solid green";
@@ -222,7 +226,7 @@
                     output_window.innerHTML = "Output: <pre style=\"color: green\">Config file syntax correct</pre>";
                 } else {
                     output_window.style.border = "1px solid #808000";
-                    output_window.innerHTML = "Output: <pre style=\"color: black\">" + warnings + "</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: yellow\">" + warnings + "</pre>";
                 }
             } catch (err) {
                 if (err.line && err.column) {
@@ -231,7 +235,7 @@
                 else {
                     error_message = err;
                 }
-                output_window.innerHTML = "Output: <pre>" + error_message + "</pre>"
+                output_window.innerHTML = `Output: <pre style="color: white">` + error_message + "</pre>"
                 output_window.style.border = "1px solid red";
 
             }
@@ -303,12 +307,13 @@
             fetch('/build?' + new URLSearchParams({
                 directory: current_dir
             }))
-            .then(function (response) 
-                { if (response.status != 200) {
-                    alert("Error building the project")
+                .then(function (response) {
+                    if (response.status != 200) {
+                        alert("Error building the project")
                     } else {
                         location.reload(); // TODO: question to ellis -> Why was this added?? We also want to preserve the state of the dir tree after reload, but we can think about that once we've finalized our frontend
-                    }})
+                    }
+                })
         } else {
             alert("Please select a project to build from the directory tree");
         }
@@ -326,7 +331,7 @@
                 .then(json => {
                     output_window = document.getElementById("output_window")
                     if (json.output.trim() != "" && !json.success) {
-                        output_window.innerHTML = "Output: <pre>" + json.output + "</pre>"
+                        output_window.innerHTML = `Output: <pre style="color: white">` + json.output + "</pre>"
                         output_window.style.border = "1px solid red";
                     } else {
                         output_window.style.border = "1px solid green";
@@ -344,42 +349,68 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<div>
+<div id="background">
+
+    <div class="title"> VHDL Web Editor </div>
+
     <div id="navbar-container">
-        <div id="navbar">
-            <button id="New_Project" onclick="new_project()">New Project</button>
-            <button id="New_File" onclick="new_file()">New File</button>
-            <!-- <button id="New_Folder" onclick="new_folder()">New Folder</button> -->
-            <button id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
-            <button id="Delete_File" onclick="delete_file()">Delete File</button>
-            <button id="Save_File" onclick="save_file()">Save</button>
-            <button id="Analyze" onclick="analyze()">Analyze</button>
-            <button id="Synthesize" onclick="synthesize()">Synthesize</button>
-            <button id="Build" onclick="build()">Build</button>
-            <button id="ValidateTOML" onclick="save_file(); validateToml()">Validate TOML file</button>
+        <div class="navbar-top">
+
+            <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
+            <button class="button-40" id="New_File" onclick="new_file()">New File</button>
+            <!-- <button class="button-40"  id="New_Folder" onclick="new_folder()">New Folder</button> -->
+            <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
+            <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
+            <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
+            <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
+            <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
+            <button class="button-40" id="Build" onclick="build()">Build</button>
+            <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
+
         </div>
     </div>
     <div class="bottom-box">
+<!-- 
+        <div class="navbar-side" id="navbar-side">
+            <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
+            <button class="button-40" id="New_File" onclick="new_file()">New File</button>
+            <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
+            <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
+            <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
+            <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
+            <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
+            <button class="button-40" id="Build" onclick="build()">Build</button>
+            <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
+        </div> -->
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
-            <ul id="myUL">
-                <h1>{{ tree.name }}</h1>
-                <ul>
-                    {%- for item in tree.children recursive %}
-                    <li class="file-tree-file">
-                        <span class="caret" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
-                            oncontextmenu="window.alert('TODO')">
-                            {{ item.name }}
-                        </span>
-                        {%- if item.children -%}
-                        <ul class="nested" oncontextmenu="window.alert('TODO')">
-                            {{ loop(item.children) }}</ul>
-                        {%- endif %}
-                    </li>
-                    {%- endfor %}
-                </ul>
+            <!-- <ol id="myUL"> -->
+            <ul>
+                {%- for item in tree.children recursive %}
+                <li class="file-tree-file">
+                    {%- if item.children -%}
+                    <i class="fa fa-folder" style="color: white"></i>
+                    {%- elif item.name.endswith('.vhd') -%}
+                    <i class="fa fa-file-code-o" style="color: white"></i>
+                    {%- else -%}
+                    <i class="fa fa-file-o" style="color: gray"></i>
+                    {%- endif %}
+                    <span class="caret" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
+                        oncontextmenu="window.alert('TODO')">
+                        {{ item.name }}
+                    </span>
+                    {%- if item.children -%}
+
+                    <ul class="nested" oncontextmenu="window.alert('TODO')">
+                        {{ loop(item.children) }}</ul>
+                    <br />
+                    <br />
+                    {%- endif %}
+                </li>
+                {%- endfor %}
             </ul>
+            <!-- </ol> -->
             <!-- Directory tree ends -->
         </div>
         <div class="name-and-ide-box">
@@ -388,13 +419,13 @@
                     src="https://www.eecs.tufts.edu/~ebrown26/ankur-img.png" id="save_indicator" hidden /><span
                     id="filename_name"></span></div>
             <!-- the text editor -->
-            <div style="background-color: #fdf6e3" id="editor_container">
+            <div id="editor_container">
                 <div class="ide" id="editor"> {{ file_contents }} </div>
                 <div id="netlist-svg" class="netlist-svg"></div>
             </div>
             <script>
                 var editor = ace.edit("editor");
-                editor.setTheme("ace/theme/solarized_light");
+                editor.setTheme("ace/theme/twilight");
                 editor.session.setMode("ace/mode/vhdl");
                 document.getElementById("editor").style.fontSize = '14px';
             </script>
@@ -434,94 +465,109 @@
         var current_dir = null; // string pathname
         var selected_dir = null; // document object
         function addTreeListeners() {
-        for (i = 0; i < toggler.length; i++) {
-            toggler[i].addEventListener("click", function () {
-                nested = this.parentElement.querySelector(".nested");
-                if (nested == null) {
-                    if (!ace.edit("editor").session.getUndoManager().isClean()) {
-                        const response = confirm("You have unsaved data, would you like to progress?");
-                        if (!response) {
-                            return;
+            for (i = 0; i < toggler.length; i++) {
+                toggler[i].addEventListener("click", function () {
+                    nested = this.parentElement.querySelector(".nested");
+                    if (nested == null) {
+                        if (!ace.edit("editor").session.getUndoManager().isClean()) {
+                            const response = confirm("You have unsaved data, would you like to progress?");
+                            if (!response) {
+                                return;
+                            }
                         }
-                    }
-                    editor = document.getElementById("editor");
-                    pathname = this.getAttribute("data-pathname");
-                    current_file = pathname;
-                    filename_container_name = document.getElementById("filename_name")
-                    if (current_file) filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);
-                    if (pathname != "" && pathname != null) {
-                        // view the file name
-                        filename_container = document.getElementById("filename_container");
-                        filename_container.style.display = "block";
+                        editor = document.getElementById("editor");
+                        pathname = this.getAttribute("data-pathname");
+                        current_file = pathname;
+                        filename_container_name = document.getElementById("filename_name")
+                        if (current_file) filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);
+                        if (pathname != "" && pathname != null) {
+                            // view the file name
+                            filename_container = document.getElementById("filename_container");
+                            filename_container.style.display = "block";
 
-                        // get request to backend to receive data to render
-                        target = '/get_file?' + new URLSearchParams({ filename: pathname })
-                        fetch(target, {
-                            method: 'GET'
-                        })
-                            .then(function (response) { return response.json(); })
-                            .then(function (json) {
-                                // if pathname ends with svg, set the ace editor to svg mode.
-                                if (pathname.endsWith(".svg")) {
-                                    // hide the editor
-                                    document.getElementById("editor").style.display = "none";
+                            // get request to backend to receive data to render
+                            target = '/get_file?' + new URLSearchParams({ filename: pathname })
+                            fetch(target, {
+                                method: 'GET'
+                            })
+                                .then(function (response) { return response.json(); })
+                                .then(function (json) {
+                                    // if pathname ends with svg, set the ace editor to svg mode.
+                                    if (pathname.endsWith(".svg")) {
+                                        // hide the editor
+                                        document.getElementById("editor").style.display = "none";
 
-                                    // show the svg
-                                    document.getElementById("netlist-svg").style.display = "block";
+                                        // show the svg
+                                        document.getElementById("netlist-svg").style.display = "block";
 
 
-                                    // console.log(document.getElementById("editor").innerHTML);
-                                    document.getElementById("netlist-svg").innerHTML = json.contents;
-                                } else {
-                                    // replace inner html with ace editor and set mode to vhdl and fill with contents
-                                    // Show the editor
-                                    document.getElementById("editor").style.display = "block";
+                                        // console.log(document.getElementById("editor").innerHTML);
+                                        document.getElementById("netlist-svg").innerHTML = json.contents;
+                                    } else {
+                                        // replace inner html with ace editor and set mode to vhdl and fill with contents
+                                        // Show the editor
+                                        document.getElementById("editor").style.display = "block";
 
-                                    // hide the svg
-                                    document.getElementById("netlist-svg").style.display = "none";
+                                        // hide the svg
+                                        document.getElementById("netlist-svg").style.display = "none";
 
-                                    editor = ace.edit("editor");
-                                    editor.session.setTabSize(4);
+                                        editor = ace.edit("editor");
+                                        editor.session.setTabSize(4);
 
-                                    if (pathname.endsWith(".txt")) {
-                                        editor.session.setMode("ace/mode/text");
+                                        if (pathname.endsWith(".txt")) {
+                                            editor.session.setMode("ace/mode/text");
+                                        }
+                                        else if (pathname.endsWith(".toml")) {
+                                            editor.session.setMode("ace/mode/toml");
+                                        }
+                                        else {
+                                            editor.session.setMode("ace/mode/vhdl");
+                                        }
+                                        editor.setTheme("ace/theme/twilight");
+                                        document.getElementById("editor").style.fontSize = '14px';
+
+                                        editor.setValue(json.contents, -1);
+                                        console.log(json.contents);
                                     }
-                                    else if (pathname.endsWith(".toml")) {
-                                        editor.session.setMode("ace/mode/toml");
-                                    }
-                                    else {
-                                        editor.session.setMode("ace/mode/vhdl");
-                                    }
-                                    editor.setTheme("ace/theme/solarized_light");
-                                    document.getElementById("editor").style.fontSize = '14px';
+                                    editor.session.getUndoManager().markClean();
+                                });
+                        } else if (pathname == "") {
+                            current_dir = this.getAttribute("data-dirname")
+                            if (selected_dir != null) {
+                                selected_dir.style.border = ""; // unselect the old color
+                            }
+                            this.style.border = "1px solid red";
+                            selected_dir = this;
+                        }
 
-                                    editor.setValue(json.contents, -1);
-                                    console.log(json.contents);
+                    } else {
+                        nested.classList.toggle("active");
+                        this.classList.toggle("caret-down");
+                        this.style.backgroundColor = "green";
+
+                        current_dir = this.getAttribute("data-dirname");
+                        // if (toggler.length <= 2) {this.style.border = "1px solid red" ;}
+
+                        for (i = 0; i < toggler.length; i++) {
+                            // Close the dropdowns of the others
+                            if (toggler[i] != this) {
+                                toggler[i].style.backgroundColor = "#2A2C48";
+                                toggler[i].classList.remove("caret-down");
+                                // if there is a parent element, remove the active class
+                                if (toggler[i].parentElement?.querySelector(".nested") != null) {
+                                    toggler[i].parentElement.querySelector(".nested").classList.remove("active");
+                                    // set the background for that element to be white   
+                                    toggler[i].parentElement.style.backgroundColor = "#2A2C48";
                                 }
-                                editor.session.getUndoManager().markClean();
-                            });
-                    } else if (pathname == "") {
-                        current_dir = this.getAttribute("data-dirname")
-                        if (selected_dir != null) {
-                            selected_dir.style.border = ""; // unselect the old color
+
+                            }
+
                         }
-                        this.style.border = "1px solid red";
                         selected_dir = this;
                     }
-
-                } else {
-                    nested.classList.toggle("active");
-                    this.classList.toggle("caret-down");
-
-                    current_dir = this.getAttribute("data-dirname");
-                    if (selected_dir != null) {
-                        selected_dir.style.border = ""; // unselect the old color
-                    }
-                    this.style.border = "1px solid red";
-                    selected_dir = this;
-                }
-            });
-        }}
+                });
+            }
+        }
         addTreeListeners();
         // TODO: how to allow people to move about directories?
 
@@ -548,41 +594,41 @@
 
     </script>
 
-<script>
-    
-function maketree(treeStructure) {
-    dirname = treeStructure.dirname;
+    <script>
 
-    let div = document.getElementById("myUL");
-    div.innerHTML = "<h1>File Tree</h1><ul>"
-        
-    function makeChildren(node) {
-        let str = "";
-        console.log(node.length);
-        for (i = 0; i < node.length; i++) {
-            let item = node[i]
-            str += '<li class="file-tree-file"> <span class="caret" data-pathname="' 
-                + item.path + '" data-dirname="' + item.dirname 
-                + '">' + item.name + '</span>'
-            if (item.children && item.children.length != 0) {
-                str += `<ul class="nested" oncontextmenu="window.alert('TODO')">`
-                str += makeChildren(item.children)
-                str += `</ul>`;
+        function maketree(treeStructure) {
+            dirname = treeStructure.dirname;
+
+            let div = document.getElementById("myUL");
+            div.innerHTML = "<h1>File Tree</h1><ul>"
+
+            function makeChildren(node) {
+                let str = "";
+                console.log(node.length);
+                for (i = 0; i < node.length; i++) {
+                    let item = node[i]
+                    str += '<li class="file-tree-file"> <span class="caret" data-pathname="'
+                        + item.path + '" data-dirname="' + item.dirname
+                        + '">' + item.name + '</span>'
+                    if (item.children && item.children.length != 0) {
+                        str += `<ul class="nested" oncontextmenu="window.alert('TODO')">`
+                        str += makeChildren(item.children)
+                        str += `</ul>`;
+                    }
+                    str += "</li>"
+
+                }
+                return str;
             }
-            str += "</li>"
-            
+
+            // TODO: fake the "click" event so the tree is expanded before the page is rendered
+
+            console.log(makeChildren(treeStructure.children));
+            div.innerHTML += makeChildren(treeStructure.children);
+            div.innerHTML += "</ul>";
+            addTreeListeners();
         }
-        return str;
-    }
-
-    // TODO: fake the "click" event so the tree is expanded before the page is rendered
-
-    console.log(makeChildren(treeStructure.children));
-    div.innerHTML += makeChildren(treeStructure.children);
-    div.innerHTML += "</ul>";
-    addTreeListeners();
-}
-</script>
+    </script>
 
     <!-- Script that allows us to validate TOML on button press -->
     <script src="{{url_for('static', filename='toml-validate.js')}}"></script>

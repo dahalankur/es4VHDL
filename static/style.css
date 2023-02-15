@@ -1,28 +1,64 @@
+html {
+  background-color: rgb(22, 24, 52);
+}
+.title {
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 40px;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  padding-inline-start: 30px;
+}
+
+.navbar-top {
+  color: darkslategray;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.editor_container {
+  border-radius: 20px;
+}
+
+.footer {
+  /* change the font color in this to white */
+  color: white;
+}
+
 .top-bar {
-    color: lightblue;
-    flex-direction: row;
+  /* color: lightblue; */
+  flex-direction: row;
 }
+
 .bottom-box {
-    /* background color green */
-    background-color: rgb(201, 205, 253);
-    /* flexbox */
-    display: flex;
-    flex-direction: row; 
-    /* add a solid border, black */
-    border: 1px solid black;
-    padding: 5px;
-    margin: 5px;
-    resize: vertical;
-    overflow: scroll;
+  /* background color green */
+  /* background-color: rgb(201, 205, 253); */
+  background-color: rgb(22, 24, 52);
+  /* flexbox */
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+  margin: 5px;
+  /* resize: vertical; */
+  /* overflow: scroll; */
 }
+
 .resize {
-    resize: horizontal;
-    width: 30%;
-    /* TODO: update default height to 1000 for default use case */
-    height: 75%;
-    /* border, red, solid */
-    padding: 5px;
-    margin: 5px;
+  /* resize: horizontal; */
+  width: auto;
+  min-width: 30%;
+  /* TODO: update default height to 1000 for default use case */
+  /* border, red, solid */
+  padding: 10px;
+  margin: 5px;
+  background-color: rgb(42, 44, 72);
+  height: 100%;
 }
 
 .alert {
@@ -45,35 +81,41 @@
   background-color: yellow;
   color: black;
 }
+
 .name-and-ide-box {
-    width: 100%;
+  width: 100%;
 }
+
 .ide {
-    /* width should fill the rest of the space */
-    width: auto;
-    height: 600px;
-    /* border, blue, solid */
-    border: 1px solid blue;
-    padding: 5px;
-    margin: 5px;
+  /* width should fill the rest of the space */
+  width: auto;
+  height: 600px;
+  /* border, blue, solid */
+  border: 1px solid blue;
+  padding: 5px;
+  margin: 5px;
 }
 
 .filename {
-    padding: 5px;
-    margin: 5px;
-    border: solid gray 1px;
-    border-radius: 5px;
-    background-color: aliceblue;
+  padding: 5px;
+  margin: 5px;
+  border: solid darkgray 1px;
+  border-radius: 5px;
+  background-color: #374151;
+  color: white;
 }
 
 .output_window_class {
-    border: 1px solid red;
-    height: auto;
-    padding: 15px;
-    margin: 15px;
+  /* border: 1px solid red; */
+  height: auto;
+  padding: 15px;
+  margin: 15px;
+  border-radius: 10px;
+  color: white;
 }
+
 .file-tree-file {
-    list-style-type: "";
+  list-style-type: "";
 }
 
 /* Below is taken from this tutorial on drop downs */
@@ -81,45 +123,116 @@
 /* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_treeview */
 
 .caret {
-    cursor: pointer;
-    -webkit-user-select: none; /* Safari 3.1+ */
-    -moz-user-select: none; /* Firefox 2+ */
-    -ms-user-select: none; /* IE 10+ */
-    user-select: none;
-    border: 1px solid gray;
-  }
-  
-  .caret::before {
-    content: ">";
-    color: black;
-    display: inline-block;
-    margin-right: 6px;
-    border: 1px solid lightgray;
-  }
-  
-  .caret-down::before {
-    -ms-transform: rotate(90deg); /* IE 9 */
-    -webkit-transform: rotate(90deg); /* Safari */'
-    transform: rotate(90deg);  
-  }
-  
-  .nested {
-    display: none;
-    border: 1px;
-  }
-  
-  .active {
-    display: block;
-  }
+  cursor: pointer;
+  -webkit-user-select: none;
+  /* Safari 3.1+ */
+  -moz-user-select: none;
+  /* Firefox 2+ */
+  -ms-user-select: none;
+  /* IE 10+ */
+  user-select: none;
+  /* border: 1px solid gray; */
+  color: white;
 
-  
-  /* End taken from tutorial  */
-  
-  /* https://www.w3schools.com/howto/howto_css_circles.asp */
-  .dot {
-    height: 25px;
+}
+
+.caret::before {
+  color: white;
+  display: inline-block;
+  margin-right: 6px;
+  /* border: 1px solid lightgray; */
+}
+
+.caret-down::before {
+  -ms-transform: rotate(90deg);
+  /* IE 9 */
+  -webkit-transform: rotate(90deg);
+  /* Safari */
+  transform: rotate(90deg);
+}
+
+.nested {
+  display: none;
+  border: 1px;
+}
+
+.active {
+  display: block;
+}
+
+
+/* End taken from tutorial  */
+
+/* https://www.w3schools.com/howto/howto_css_circles.asp */
+.dot {
+  height: 25px;
   width: 25px;
   background-color: #bbb;
   border-radius: 50%;
   display: inline-block;
+}
+
+
+
+
+
+
+/* CSS */
+.button-40 {
+  margin: 3px;
+  background-color: #30446f;
+  border: 1px solid transparent;
+  border-radius: .75rem;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5rem; */
+  padding: .75rem 1.2rem;
+  text-align: center;
+  text-decoration: none #6B7280 solid;
+  text-decoration-thickness: auto;
+  transition-duration: .2s;
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: auto;
+}
+
+.button-40:hover {
+  background-color: #374151;
+}
+
+.button-40:focus {
+  box-shadow: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.navbar-side {
+  display: none
+}
+
+@media (max-width: 1400px) {
+  .button-40 {
+    /* Make the buttons smaller */
+    padding: .25rem .4rem;
   }
+
+  .navbar-top {
+    display: inline;
+  }
+
+  .navbar-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+  }
+}
+
+
