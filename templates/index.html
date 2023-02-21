@@ -401,9 +401,8 @@ function rightClickFile() {
                     {%- else -%}
                     <i class="fa fa-file-o" style="color: gray"></i>
                     {%- endif %}
-                    <span class="caret" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
-                        oncontextmenu="
-                        window.alert('todo');
+                    <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
+                        oncontextmenu="window.alert('todo');
                         return false;">
                         {{ item.name }}
                     </span>
