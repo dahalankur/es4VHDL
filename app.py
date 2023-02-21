@@ -1,5 +1,6 @@
 import os
 import shutil
+import datetime
 import json
 import toml
 import logging
@@ -386,6 +387,25 @@ def build(user):
 
         os.chmod(path=makefile_path, mode=0o660)
         app.logger.info(f"{user}: Ran make on project {directory}")
+
+        # TODO: -------- back up begins here --------
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+
+        # create a user-specific backup directory if it doesn't exist
+        backup_dir = f'{script_dir}/.backup/{user}'
+        if not os.path.exists(backup_dir):
+            os.makedirs(backup_dir)
+        
+        # create a project-specific backup directory if it doesn't exist
+        project_backup_dir = f'{backup_dir}/{os.path.basename(directory)}'
+        if not os.path.exists(project_backup_dir):
+            os.makedirs(project_backup_dir)
+
+        # copy the project directory to the backup directory
+        shutil.copytree(directory, f'{project_backup_dir}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
+
+        # TODO: -------- back up ends here --------
+
     except Exception as error:
         app.logger.error(f"{user}: Error building project {directory} -> ", error)
         return redirect(url_for('index'))
