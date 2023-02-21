@@ -2,7 +2,6 @@
 
 {% block content %}
 
-<!-- TODO: show flashed message somewhere!!! -->
 <!-- TODO: add directory icons besides directories, and file icons besides files in the tree! also add an "expand all" button -->
 <script>
     var most_recent_project = null;
@@ -346,6 +345,12 @@
     }
 </script>
 
+<script>
+function rightClickFile() {
+    
+}
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -389,7 +394,7 @@
             <ul>
                 {%- for item in tree.children recursive %}
                 <li class="file-tree-file">
-                    {%- if item.children -%}
+                    {%- if item.children is defined -%}
                     <i class="fa fa-folder" style="color: white"></i>
                     {%- elif item.name.endswith('.vhd') -%}
                     <i class="fa fa-file-code-o" style="color: white"></i>
@@ -397,12 +402,13 @@
                     <i class="fa fa-file-o" style="color: gray"></i>
                     {%- endif %}
                     <span class="caret" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
-                        oncontextmenu="window.alert('TODO')">
+                        oncontextmenu="
+                        window.alert('todo');
+                        return false;">
                         {{ item.name }}
                     </span>
-                    {%- if item.children -%}
-
-                    <ul class="nested" oncontextmenu="window.alert('TODO')">
+                    {%- if item.children is defined -%}
+                    <ul class="nested">
                         {{ loop(item.children) }}</ul>
                     <br />
                     <br />
@@ -459,12 +465,23 @@
 
 
     <script>
+
         var toggler = document.getElementsByClassName("caret");
+
+
         var i;
         var current_file = null;
         var current_dir = null; // string pathname
         var selected_dir = null; // document object
         function addTreeListeners() {
+            // for (i = 0; i < toggler.length; i++) {
+            //     toggler.addEventListener("")
+            //     toggler[i].addEventListener('contextmenu', function(ev) {
+            //         // ev.preventDefault();
+            //         alert('hello!!');
+            //         // return false;
+            //     }, false);
+            // }
             for (i = 0; i < toggler.length; i++) {
                 toggler[i].addEventListener("click", function () {
                     nested = this.parentElement.querySelector(".nested");

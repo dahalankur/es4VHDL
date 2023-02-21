@@ -5,7 +5,6 @@ import json
 import toml
 import logging
 from pathlib import Path
-import requests
 from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_htpasswd import HtPasswdAuth
@@ -42,11 +41,13 @@ app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config['FLASK_HTPASSWD_PATH'] = '.htpasswd'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.jinja_env.auto_reload = True
+# app.jinja_env.auto_reload = True
 
+# Set up Flask to log errors to a file (in addition to the console by default)
 gunicorn_logger = logging.getLogger('gunicorn.error')
-app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
+app.logger.handlers = gunicorn_logger.handlers
+
 
 htpasswd = HtPasswdAuth(app)
 
@@ -395,14 +396,19 @@ def build(user):
         backup_dir = f'{script_dir}/.backup/{user}'
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
+            os.chmod(backup_dir, mode=0o2770)
+            shutil.chown(backup_dir, user=None, group='es4vhdl-admin')
         
         # create a project-specific backup directory if it doesn't exist
         project_backup_dir = f'{backup_dir}/{os.path.basename(directory)}'
         if not os.path.exists(project_backup_dir):
             os.makedirs(project_backup_dir)
+            os.chmod(project_backup_dir, mode=0o2770)
+            shutil.chown(backup_dir, user=None, group='es4vhdl-admin')
 
-        # copy the project directory to the backup directory TODO: check if permissions are correct (ask alina to build and compare the permissions of the server on the backed up files)
-        shutil.copytree(directory, f'{project_backup_dir}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
+        curr_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        shutil.copytree(directory, f'{project_backup_dir}/{curr_time}')
 
         # -------- back up ends here --------
 
