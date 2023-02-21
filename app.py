@@ -1,6 +1,6 @@
 import os
 import shutil
-import datetime
+from datetime import datetime
 import json
 import toml
 import logging
