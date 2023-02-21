@@ -388,7 +388,7 @@ def build(user):
         os.chmod(path=makefile_path, mode=0o660)
         app.logger.info(f"{user}: Ran make on project {directory}")
 
-        # TODO: -------- back up begins here --------
+        # -------- back up begins here --------
         script_dir = os.path.dirname(os.path.realpath(__file__))
 
         # create a user-specific backup directory if it doesn't exist
@@ -401,10 +401,10 @@ def build(user):
         if not os.path.exists(project_backup_dir):
             os.makedirs(project_backup_dir)
 
-        # copy the project directory to the backup directory
+        # copy the project directory to the backup directory TODO: check if permissions are correct (ask alina to build and compare the permissions of the server on the backed up files)
         shutil.copytree(directory, f'{project_backup_dir}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
 
-        # TODO: -------- back up ends here --------
+        # -------- back up ends here --------
 
     except Exception as error:
         app.logger.error(f"{user}: Error building project {directory} -> ", error)
