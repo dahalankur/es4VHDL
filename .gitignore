@@ -13,3 +13,7 @@ __pycache__
 .DS_Store
 
 *.log
+
+# ignore huge toolchain binaries
+fpga-toolchain/
+vhd2vl-repo/
