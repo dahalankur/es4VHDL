@@ -177,6 +177,22 @@
         }
     }
 
+    function generate_bin() {
+        if (current_dir) {
+            fetch('/generate_bin?' + new URLSearchParams({
+                directory: current_dir
+            }))
+                .then(function (response) {
+                    console.log(response)
+                    if (response.status != 200) {
+                        alert("Error generating the bin file for the project")
+                    }
+                })
+        } else {
+            alert("Please select a project to generate bitstream from the directory tree");
+        }
+    }
+
     function synthesize() {
         if (current_file) {
             // save the file and send the filename over to the backend
@@ -371,11 +387,12 @@ function rightClickFile() {
             <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
             <button class="button-40" id="Build" onclick="build()">Build</button>
             <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
+            <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream for Project</button>
 
         </div>
     </div>
     <div class="bottom-box">
-
+<!-- 
         <div class="navbar-side" id="navbar-side">
             <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
             <button class="button-40" id="New_File" onclick="new_file()">New File</button>
@@ -386,7 +403,8 @@ function rightClickFile() {
             <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
             <button class="button-40" id="Build" onclick="build()">Build</button>
             <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
-        </div>
+
+        </div> -->
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->

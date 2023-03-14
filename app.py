@@ -349,6 +349,36 @@ def perform_synthesis(user, to_synthesize):
 def synthesize_file(user):
     return perform_synthesis(user, request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
 
+@app.route("/generate_bin", methods=['GET'])
+@htpasswd.required
+def generate_bin(user):
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+    directory = request.args.get('directory')
+
+    # build(user) TODO: assume project has already been built (FOR TESTING ONLY)
+
+    # from config.toml, get the toplevel module
+    toplevel = ""
+    try:
+        with open(f'{directory}/config.toml', 'r') as f:
+            config = toml.load(f)
+            toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
+        
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        output = safe_run([f"{script_dir}/bin/generate_bin.sh", f'{directory}/{toplevel}'], cwd=os.path.dirname(directory),timeout=30).decode("utf-8")
+        # print(script_dir, output, toplevel, directory) # TODO: log here
+    except Exception as error:
+        app.logger.error(f"{user}: Error generating bin file for toplevel entity {toplevel} -> ", error)
+    
+    bitstream = Path(toplevel).stem  +  ".bin"
+    build_success = "Info: Program finished normally." in output
+
+    app.logger.info(f"{user}: Generated bitstream for project {directory}")
+
+    return jsonify({
+            "output" : output,
+            "success" : build_success
+        })
 
 @app.route("/build", methods=['GET'])
 @htpasswd.required
@@ -378,7 +408,7 @@ def build(user):
     output = ""
 
     try:
-        with open(f'{directory}/pin_constraints.pdc', "w") as f: f.write(pin_constraints)
+        with open(f'{directory}/pin_constraints.pcf', "w") as f: f.write(pin_constraints)
         
         output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
 
@@ -464,7 +494,7 @@ def generate_pinconstraint(user, config):
                 config = toml.load(f)
             pins = config["pins"]
             for varName, pinNumber in pins.items():
-                pins_str += f"ldc_set_location -site {{{pinNumber}}} [get_ports {{{varName}}}]\n"
+                pins_str += f"set_io {varName} {pinNumber}\n"
             app.logger.info(f"{user}: Generated pin constraints from config: {config}")
         except Exception as error:
             # TODO: send to frontend
