@@ -56,13 +56,6 @@
                         alert(data.contents);
                     }
                 });
-            // await response.json();
-            // if (response.redirected) {
-            //     alert("An error occurred while creating the file. Please check that the file you are trying to create does not already exist.")
-            // } else {
-            //     // location.reload(); // refresh on successful response from the backend
-            // }
-
         }
     }
 
@@ -197,7 +190,6 @@
         if (current_file) {
             // save the file and send the filename over to the backend
             save_file()
-            // TODO: endpoint currently does not exist in app.py
             fetch('/synthesize_file?' + new URLSearchParams({
                 filename: current_file
             }))
@@ -227,7 +219,6 @@
     // This function depends on this code here:
     // https://github.com/jakwings/toml-j0.4
     function validateToml() {
-        console.log("validateToml");
         if (current_file) {
             // save the file and send the filename over to the backend
             const toml_data = editor.getValue()
@@ -257,7 +248,7 @@
             console.log("Done");
 
         } else {
-            alert("Please select a file to analyze from the directory tree");
+            alert("Please select a valid config.toml file");
         }
     }
     // Makes sure the toml file provided by a student matches exactly
@@ -362,9 +353,9 @@
 </script>
 
 <script>
-function rightClickFile() {
-    
-}
+    function rightClickFile() {
+
+    }
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
@@ -392,19 +383,6 @@ function rightClickFile() {
         </div>
     </div>
     <div class="bottom-box">
-<!-- 
-        <div class="navbar-side" id="navbar-side">
-            <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
-            <button class="button-40" id="New_File" onclick="new_file()">New File</button>
-            <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
-            <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
-            <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
-            <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
-            <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
-            <button class="button-40" id="Build" onclick="build()">Build</button>
-            <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
-
-        </div> -->
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
@@ -419,8 +397,8 @@ function rightClickFile() {
                     {%- else -%}
                     <i class="fa fa-file-o" style="color: gray"></i>
                     {%- endif %}
-                    <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}" data-dirname="{{ item.dirname }}"
-                        oncontextmenu="window.alert('todo');
+                    <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}"
+                        data-dirname="{{ item.dirname }}" oncontextmenu="window.alert('todo');
                         return false;">
                         {{ item.name }}
                     </span>
@@ -483,6 +461,16 @@ function rightClickFile() {
 
     <script>
 
+    function downloadURI(uri, name) {
+        var link = document.createElement("a");
+        link.download = name;
+        link.href = uri;
+        document.body.appendChild(link);
+        // link.click();
+        // document.body.removeChild(link);
+        // delete link;
+    }
+
         var toggler = document.getElementsByClassName("caret");
 
 
@@ -520,6 +508,34 @@ function rightClickFile() {
                             filename_container.style.display = "block";
 
                             // get request to backend to receive data to render
+                            if (current_file.endsWith(".bin")) {
+                                const target = '/get_binary_file?' + new URLSearchParams({ filename: pathname });
+                                fetch(target, { method: 'GET' })
+                                    .then(response => response.blob())
+                                    .then(blob => {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const short_filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+                                        // Create a button that onClick downloads the url, and set the innerHTML of 
+                                        //  document.getElementById("netlist-svg").style.display = "block"; 
+                                        // this element will have it's inner HTML updated
+                                        const button = 
+                                        `<a href=` + url + ` download="` + short_filename + `"  style="text-decoration:none">
+                                            <div style="padding:20px;border-radius:15px;margin:20;font-size:26;background-color:gray;color:white;">
+                                                Download ` + short_filename + `
+                                            </div>
+                                            
+                                            </a>`;
+                                        document.getElementById("netlist-svg").style.display = 'block';
+                                        document.getElementById("netlist-svg").innerHTML = button;
+                                        // hide the editor 
+                                        document.getElementById("editor").style.display = "none";
+                                        return;
+                                    })
+                                    .catch(error => console.error('Error downloading binary file:', error));
+                                return;
+                            }
+
+
                             target = '/get_file?' + new URLSearchParams({ filename: pathname })
                             fetch(target, {
                                 method: 'GET'
@@ -530,7 +546,7 @@ function rightClickFile() {
                                     if (pathname.endsWith(".svg")) {
                                         // hide the editor
                                         document.getElementById("editor").style.display = "none";
-                                        
+
 
                                         // show the svg
                                         document.getElementById("netlist-svg").style.display = "block";
@@ -605,8 +621,6 @@ function rightClickFile() {
             }
         }
         addTreeListeners();
-        // TODO: how to allow people to move about directories?
-
         // command S implementation: https://www.thatsoftwaredude.com/content/8783/how-to-ctrl--s-to-save-in-javascript
         var isCtrl = false;
         window.addEventListener('load', function () {

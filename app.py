@@ -6,7 +6,7 @@ import toml
 import logging
 from pathlib import Path
 from build_files import safe_run
-from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, send_file
 from flask_htpasswd import HtPasswdAuth
 
 # TODO: vulnerability: if the user sends some other path in one of the GET requests, we will currently run the command for another user. We do not want this, so we want 
@@ -250,6 +250,20 @@ def get_file(user):
         # TODO: send to frontend
     return jsonify(data)
 
+@app.route('/get_binary_file', methods=["GET"])
+@htpasswd.required
+def get_binary_file(user):
+    data = {"contents" : ""}
+    try:
+        filename = request.args.get('filename').strip()
+        app.logger.info(f"{user}: Opened {filename}")
+        return send_file(filename, as_attachment=True)
+    except Exception as error:
+        app.logger.error(f"{user}: Error opening file {filename} -> ", error)
+        # TODO: send to frontend
+    # get only the file name
+    return jsonify({"content": ""})
+    
 
 @app.route('/save_file', methods=["POST"])
 @htpasswd.required
