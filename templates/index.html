@@ -340,7 +340,7 @@
                     if (response.status != 200) {
                         alert("Error building the project")
                     } else {
-                        location.reload(); // TODO: question to ellis -> Why was this added?? We also want to preserve the state of the dir tree after reload, but we can think about that once we've finalized our frontend
+                        // location.reload(); // TODO: question to ellis -> Why was this added?? We also want to preserve the state of the dir tree after reload, but we can think about that once we've finalized our frontend
                     }
                     get_and_update_tree();
                 })
@@ -397,7 +397,6 @@
             <button class="button-40" id="Build" onclick="build()">Build</button>
             <button class="button-40" id="ValidateTOML" onclick="save_file(); validateToml()">Validate Config</button>
             <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream for Project</button>
-            <button class="button-40" id="Update Tree" onclick="get_and_update_tree()">Update Tree</button>
 
         </div>
     </div>

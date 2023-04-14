@@ -4,8 +4,10 @@
 - I received an error while trying to create a file (on the frontend). Backend logs
 showed no anomaly, probably just a false positive from the frontend. We will be 
 changing this anyway.
-
+- Deleting project then clicking 'new file' may cauyse an error (untested)
 - show "loading" or some other message when something is being done in the background
+    - ChatGPT can do this, you make a DIV loading, and set everythbackground to opacity 0.5
+    - Then, when the loading is done, you set the opacity back to 1 and remove the loading div
 - error messages for everything!! build, file/folder creation, pins, etc. etc.!!!
     - config errors => report in output
     - link these from the backend to the frontend

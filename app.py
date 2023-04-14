@@ -72,13 +72,13 @@ def make_tree(path):
                 tree['children'].append(dict(name=name, path=fn))
     return tree
 
+# TODO: Eventually remove this route, as every other route should
+# return the tree, and the tree should be updated on the frontend
+# This therefore does not to be called ever.
 @app.route('/get_tree', methods = ['GET'])
 @htpasswd.required
 def get_tree(user):
-    print('get_tree called')
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    print('get_tree called 2')
-    # print(jsonify(make_tree(path)))
     return jsonify(make_tree(path))
 
 @app.route('/delete_file', methods = ['GET'])
