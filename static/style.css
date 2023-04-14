@@ -28,7 +28,7 @@ ul {
 
 .footer {
   /* change the font color in this to white */
-  color: white;
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .top-bar {
@@ -116,6 +116,7 @@ ul {
 
 .file-tree-file {
   list-style-type: "";
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 /* Below is taken from this tutorial on drop downs */
@@ -171,9 +172,6 @@ ul {
   border-radius: 50%;
   display: inline-block;
 }
-
-
-
 
 
 
