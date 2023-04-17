@@ -419,7 +419,7 @@ function ChangeDropDown() {
                 {%- for item in tree.children recursive %}
                 <li class="file-tree-file">
                     {%- if item.children is defined -%}
-                    &nbsp <i class="fa fa-folder" style="color: white"></i>
+                    &nbsp; <i class="fa fa-folder" style="color: white"></i>
                     {%- elif item.name.endswith('.vhd') -%}
                     <i class="fa fa-file-code-o" style="color: white"></i>
                     {% elif item.name.endswith('.toml') -%}
