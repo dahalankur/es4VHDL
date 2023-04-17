@@ -415,11 +415,11 @@ function ChangeDropDown() {
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
             <!-- <ol id="myUL"> -->
-            <ul>
+            
                 {%- for item in tree.children recursive %}
-                <li class="file-tree-file caret">
+                <li class="file-tree-file">
                     {%- if item.children is defined -%}
-                    &nbsp;<i class="fa fa-folder" style="color: white"></i>
+                    &nbsp <i class="fa fa-folder" style="color: white"></i>
                     {%- elif item.name.endswith('.vhd') -%}
                     <i class="fa fa-file-code-o" style="color: white"></i>
                     {% elif item.name.endswith('.toml') -%}
@@ -427,7 +427,7 @@ function ChangeDropDown() {
                     {%- else -%}
                     <i class="fa fa-file-o" style="color: gray"></i>
                     {%- endif %}
-                    <span class="" id="{{ item.path }}" data-pathname="{{ item.path }}"
+                    <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}"
                         data-dirname="{{ item.dirname }}" oncontextmenu="window.alert('todo');
                         return false;">
                         {{ item.name }}
@@ -440,7 +440,7 @@ function ChangeDropDown() {
                     {%- endif %}
                 </li>
                 {%- endfor %}
-            </ul>
+            
             <!-- </ol> -->
             <!-- Directory tree ends -->
         </div>
