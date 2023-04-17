@@ -51,9 +51,12 @@
                     if (data.result !== 'success') {
                         alert(data.message);
                     }
+                    else {
+                        update_tree(data.tree);
+                    }
                 });
         }
-        get_and_update_tree();
+
     }
 
     function new_folder() {
@@ -371,16 +374,16 @@
     }
 </script>
 <script>
-function ChangeDropDown() {
-  var dropdown = document.getElementById("dropdownButtonTop");
-  if (dropdown.style.display === "none") {
-    dropdown.style.display = "block";
-    document.getElementById("DropDown").innerHTML = "Show Less";
-  } else {
-    dropdown.style.display = "none";
-    document.getElementById("DropDown").innerHTML = "Show More";
-  }
-}
+    function ChangeDropDown() {
+        var dropdown = document.getElementById("dropdownButtonTop");
+        if (dropdown.style.display === "none") {
+            dropdown.style.display = "block";
+            document.getElementById("DropDown").innerHTML = "Show Less";
+        } else {
+            dropdown.style.display = "none";
+            document.getElementById("DropDown").innerHTML = "Show More";
+        }
+    }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.3/ace.js"
     integrity="sha512-yARx+3W/tyZPXyRfZ4DLRdj0rXF2yjH2D6bKpPslrl1c62Q6ZC808L++ft9jkzIN9vmLtQCFsYNrzoOE/Im2Dg=="
@@ -415,32 +418,32 @@ function ChangeDropDown() {
         <div class="resize" id="filetree">
             <!-- Directory tree begins -->
             <!-- <ol id="myUL"> -->
-            
-                {%- for item in tree.children recursive %}
-                <li class="file-tree-file">
-                    {%- if item.children is defined -%}
-                    &nbsp; <i class="fa fa-folder" style="color: white"></i>
-                    {%- elif item.name.endswith('.vhd') -%}
-                    <i class="fa fa-file-code-o" style="color: white"></i>
-                    {% elif item.name.endswith('.toml') -%}
-                    <i class="fa fa-file-text-o" style="color: white"></i>
-                    {%- else -%}
-                    <i class="fa fa-file-o" style="color: gray"></i>
-                    {%- endif %}
-                    <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}"
-                        data-dirname="{{ item.dirname }}" oncontextmenu="window.alert('todo');
+
+            {%- for item in tree.children recursive %}
+            <li class="file-tree-file">
+                {%- if item.children is defined -%}
+                &nbsp; <i class="fa fa-folder" style="color: white"></i>
+                {%- elif item.name.endswith('.vhd') -%}
+                <i class="fa fa-file-code-o" style="color: white"></i>
+                {% elif item.name.endswith('.toml') -%}
+                <i class="fa fa-file-text-o" style="color: white"></i>
+                {%- else -%}
+                <i class="fa fa-file-o" style="color: gray"></i>
+                {%- endif %}
+                <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}"
+                    data-dirname="{{ item.dirname }}" oncontextmenu="window.alert('todo');
                         return false;">
-                        {{ item.name }}
-                    </span>
-                    {%- if item.children is defined -%}
-                    <ul class="nested">
-                        {{ loop(item.children) }}</ul>
-                    <br />
-                    <br />
-                    {%- endif %}
-                </li>
-                {%- endfor %}
-            
+                    {{ item.name }}
+                </span>
+                {%- if item.children is defined -%}
+                <ul class="nested">
+                    {{ loop(item.children) }}</ul>
+                <br />
+                <br />
+                {%- endif %}
+            </li>
+            {%- endfor %}
+
             <!-- </ol> -->
             <!-- Directory tree ends -->
         </div>
@@ -709,8 +712,7 @@ function ChangeDropDown() {
 
             return html;
         }
-
-        function get_and_update_tree() {
+        function update_tree(data) {
             // Get a list of already toggled directories
             let toggled = [];
             // Find nested active
@@ -726,33 +728,29 @@ function ChangeDropDown() {
                 let span = parent.getElementsByTagName("span")[0];
                 previous_activated_dir = span.getAttribute("data-dirname");
             }
+            let treeHTML = "";
+            treeHTML += generateTreeHTML(data);
+            document.getElementById('filetree').innerHTML = treeHTML;
 
 
-
-
-
-
-            // Fetch the directory tree data from the server and render it
+            addTreeListeners();
+            // Activate the previously toggled directories
+            // Find the element with the data-dirname attribute matching the previous_activated_dir
+            if (previous_activated_dir) {
+                let toggled_dir = document.querySelector(`[data-dirname="${previous_activated_dir}"]`);
+                if (toggled_dir == null) {
+                    return;
+                }
+                let parent = toggled_dir.parentElement;
+                toggled_dir.click();
+            }
+        }
+        function get_and_update_tree() {
+          // Fetch the directory tree data from the server and render it
             fetch('/get_tree')  // Replace '/tree' with the URL of the server endpoint that returns the tree data
                 .then(response => response.json())
-                .then(data => {
-                    let treeHTML = "<ul>";
-                    treeHTML += generateTreeHTML(data);
-                    treeHTML += "</ul>";
-                    document.getElementById('filetree').innerHTML = treeHTML;
-
-
-                    addTreeListeners();
-                    // Activate the previously toggled directories
-                    // Find the element with the data-dirname attribute matching the previous_activated_dir
-                    if (previous_activated_dir) {
-                        let toggled_dir = document.querySelector(`[data-dirname="${previous_activated_dir}"]`);
-                        if (toggled_dir == null) {
-                            return;
-                        }
-                        let parent = toggled_dir.parentElement;
-                        toggled_dir.click();
-                    }
+                .then(tree => {
+                    update_tree(tree);
                 })
                 .catch(error => {
                     console.error(error);

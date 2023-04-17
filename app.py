@@ -233,29 +233,29 @@ def new_file(user):
             error_msg = f"File {filename} already exists"
             app.logger.error(f"{user}: {error_msg}")
             # TODO: send to frontend
-            response = {"contents" : error_msg, "result": 'fail', "message": error_msg}
-            return jsonify(response)
+            return jsonify({"contents" : error_msg, 
+                            "result": 'fail',
+                              "message": error_msg})
         try:
             open(filename, "w")
             os.chmod(path=filename, mode=0o660)
             app.logger.info(f"{user}: Created file {filename}")
         except Exception as error:
-            # TODO: send to frontend
-            app.logger.error(f"{user}: Error creating file and/or changing permissions -> ", error)
+            err_msg = f"{user}: Error creating file and/or changing permissions -> ", error
+            app.logger.error(err_msg)
+            return jsonify ({ "contents" : err_msg, 
+                             "result": 'fail',
+                               "message": err_msg})
     else:
-        app.logger.error(f"{user}: Directory {current_dir} does not exist")
-        # TODO: send to frontend
-        # return redirect(url_for('index'))
-        # response = {"success": False, "contents": f"{user}: Directory {current_dir} does not exist"}
+        err_msg = f"{user}: Directory {current_dir} does not exist"
+        app.logger.error(err_msg)
         return jsonify({'result': 'fail', 
-                        'message': f"{user}: Directory {current_dir} does not exist", 
+                        'message': err_msg,
                         "tree":make_tree(path)})
-        return jsonify(response)
-    # tree = make_tree(path)
-    # return jsonify({"success": True, "contents": tree})
+
     return jsonify({'result': 'success',
                     'message': 'Successfully created the new file',
-                    "tree":make_tree(path)})
+                    "tree": make_tree(path)})
 
     
     # return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
