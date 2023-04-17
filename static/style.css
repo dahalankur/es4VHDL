@@ -1,6 +1,7 @@
 html {
   background-color: rgb(22, 24, 52);
 }
+
 .title {
   font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-size: 40px;
@@ -118,6 +119,10 @@ ul {
   list-style-type: "";
   font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+.file-tree-file:hover {
+  /* box-shadow: rgba(23, 40, 169, 0.35) 0 -25px 18px -14px inset, rgba(11, 34, 112, 0.25) 0 1px 2px, rgba(44, 187, 99, .25) 0 2px 4px, rgba(44, 187, 99, .25) 0 4px 8px, rgba(26, 51, 126, 0.25) 0 8px 16px, rgba(30, 40, 152, 0.25) 0 16px 32px; */
+  /* transform: scale(1.02) rotate(-1deg); */
+}
 
 /* Below is taken from this tutorial on drop downs */
 
@@ -134,7 +139,6 @@ ul {
   user-select: none;
   /* border: 1px solid gray; */
   color: white;
-
 }
 
 .caret::before {
@@ -234,3 +238,33 @@ ul {
 }
 
 
+/* CSS */
+.button-33 {
+  background-color: #c2fbd7;
+  border-radius: 100px;
+  box-shadow: rgba(44, 187, 99, .2) 0 -10px 10px -10px inset, rgba(44, 187, 99, .15) 0 1px 2px, rgba(44, 187, 99, .15) 0 2px 4px, rgba(44, 187, 99, .15) 0 4px 8px, rgba(44, 187, 99, .15) 0 8px 16px, rgba(44, 187, 99, .15) 0 16px 32px;
+  color: green;
+  cursor: pointer;
+  display: inline-block;
+  font-family: CerebriSans-Regular, -apple-system, system-ui, Roboto, sans-serif;
+  padding: 7px 20px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 250ms;
+  border: 0;
+  font-size: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+
+.button-33:hover {
+  box-shadow: rgba(44, 187, 99, .35) 0 -25px 18px -14px inset, rgba(44, 187, 99, .25) 0 1px 2px, rgba(44, 187, 99, .25) 0 2px 4px, rgba(44, 187, 99, .25) 0 4px 8px, rgba(44, 187, 99, .25) 0 8px 16px, rgba(44, 187, 99, .25) 0 16px 32px;
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.button-40:hover {
+  box-shadow: rgba(23, 40, 169, 0.35) 0 -25px 18px -14px inset, rgba(11, 34, 112, 0.25) 0 1px 2px, rgba(44, 187, 99, .25) 0 2px 4px, rgba(44, 187, 99, .25) 0 4px 8px, rgba(26, 51, 126, 0.25) 0 8px 16px, rgba(30, 40, 152, 0.25) 0 16px 32px;
+  transform: scale(1.02) rotate(-1deg);
+}

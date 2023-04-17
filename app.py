@@ -6,7 +6,7 @@ import toml
 import logging
 from pathlib import Path
 from build_files import safe_run
-from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, send_file
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, url_for, jsonify, send_file
 from flask_htpasswd import HtPasswdAuth
 
 # TODO: vulnerability: if the user sends some other path in one of the GET requests, we will currently run the command for another user. We do not want this, so we want 
@@ -25,6 +25,16 @@ from flask_htpasswd import HtPasswdAuth
 
 #  ------ END OF LOGGING INFO ---------
 
+
+
+# ----------- JSON RESPONSE INFO -------------
+# Every response from the server should be a
+# JSON object for normal responses
+#
+# { 'result'  : 'success' | 'fail',
+#   'message' : 'some message',
+#   'tree'   ?: tree_data }
+# ---------- END OF JSON RESPONSE INFO -------
 
 
 default_msg = '''
@@ -54,6 +64,7 @@ htpasswd = HtPasswdAuth(app)
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 # TODO: change this, simplify the workflow later when dealing with frontend
 # TODO: Update the size of the file tree and the editor window to be correct.
@@ -88,9 +99,11 @@ def delete_file(user):
     to_delete = request.args.get('filename')
     if os.path.exists(path=to_delete):
         if not os.path.isfile(path=to_delete):
-            app.logger.error(f"{user}: Cannot delete non-file {to_delete}")
-            # TODO: send message to frontend about file not being able to be deleted
-            return redirect(url_for('index'))
+            err_msg = f"{user}: Cannot delete non-file {to_delete}"
+            app.logger.error(err_msg)
+            return jsonify({ "tree": make_tree(path), 
+                            "result": 'fail',
+                             "message": err_msg })
         # Delete the file
         try:
             os.remove(to_delete)
@@ -101,8 +114,10 @@ def delete_file(user):
     else:
         # TODO: send message to frontend about file not existing
         app.logger.error(f"{user}: File {to_delete} does not exist")
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+        return jsonify({ "tree": make_tree(path), 
+                         "result": 'fail', 
+                         "message": f'File {to_delete} does not exist'})
+    return jsonify({ "tree": make_tree(path), "result": 'success', "message": '' })
 
 
 @app.route('/delete_folder', methods = ['GET'])
@@ -112,9 +127,12 @@ def delete_folder(user):
     to_delete = request.args.get('current_dir')
     if os.path.exists(path=to_delete):
         if not os.path.isdir(to_delete):
-            app.logger.error(f"{user}: Cannot delete non-folder {to_delete}")
+            err_msg = f"{user}: Cannot delete non-folder {to_delete}"
+            app.logger.error(err_msg);
             # TODO: send message to frontend about folder not being able to be deleted
-            return redirect(url_for('index'))
+            return jsonify({ "tree": make_tree(path),
+                             "result": 'fail', 
+                             "message": err_msg })
         # Delete the folder
         try:
             shutil.rmtree(to_delete, ignore_errors=False, onerror=None)
@@ -125,8 +143,8 @@ def delete_folder(user):
     else:
         # TODO: send message to frontend about folder not existing
         app.logger.error(f"{user}: Folder {to_delete} does not exist")
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+        return jsonify({ "tree": make_tree(path), "result": 'fail', "message": f'Folder {to_delete} does not exist' })
+    return jsonify({ "tree": make_tree(path), "result": 'success', "message": '' })
 
 
 @app.route('/new_folder', methods = ['GET'])
@@ -139,9 +157,12 @@ def new_folder(user):
     if os.path.exists(path=current_dir):
         if os.path.exists(path=new_dir):
             # TODO: send message to frontend about directory already existing
-            app.logger.error(f"{user}: Directory {new_dir} already exists")
-            return redirect(url_for('index'))
-        
+            err_msg = f"{user}: Directory {new_dir} already exists"
+            app.logger.error(err_msg)
+            return jsonify({ "tree": make_tree(path), 
+                            "result": 'fail', 
+                            "message": err_msg })
+    
         try:
         # Create the new directory with appropriate permissions
             os.mkdir(path=new_dir)
@@ -152,9 +173,11 @@ def new_folder(user):
             # TODO: send to frontend
     else:
         # TODO: send message to frontend about file not being able to be created
-        app.logger.error(f"{user}: Path to directory {new_dir} does not exist")
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+        err_msg = f"{user}: Path to directory {new_dir} does not exist"
+        app.logger.error(err_msg)
+        return jsonify({ "tree": make_tree(path), 
+                         "result": 'fail', 
+                         "message": err_msg })
  
 
 @app.route('/new_project', methods = ['GET'])
@@ -191,8 +214,9 @@ src       = []   # List all vhd files you need to build your project
     else:
         app.logger.error(f"{user}: Project {projname} already exists")
         # TODO: send this to frontend
-        return redirect(url_for('index'))
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+    return jsonify({ "tree": make_tree(path), 
+                    "result": 'success', 
+                    "message": '' })
 
 @app.route('/new_file', methods = ['POST'])
 @htpasswd.required
@@ -209,9 +233,7 @@ def new_file(user):
             error_msg = f"File {filename} already exists"
             app.logger.error(f"{user}: {error_msg}")
             # TODO: send to frontend
-            response = {"contents" : error_msg, "success" : False}
-            # flash('DUPLICATE FILE!!! DUH')
-            # return redirect(url_for('index'))
+            response = {"contents" : error_msg, "result": 'fail', "message": error_msg}
             return jsonify(response)
         try:
             open(filename, "w")
@@ -224,10 +246,17 @@ def new_file(user):
         app.logger.error(f"{user}: Directory {current_dir} does not exist")
         # TODO: send to frontend
         # return redirect(url_for('index'))
-        response = {"success": False, "contents": f"{user}: Directory {current_dir} does not exist"}
+        # response = {"success": False, "contents": f"{user}: Directory {current_dir} does not exist"}
+        return jsonify({'result': 'fail', 
+                        'message': f"{user}: Directory {current_dir} does not exist", 
+                        "tree":make_tree(path)})
         return jsonify(response)
-    tree = make_tree(path)
-    return jsonify({"success": True, "contents": tree})
+    # tree = make_tree(path)
+    # return jsonify({"success": True, "contents": tree})
+    return jsonify({'result': 'success',
+                    'message': 'Successfully created the new file',
+                    "tree":make_tree(path)})
+
     
     # return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
@@ -399,7 +428,8 @@ def generate_bin(user):
 
     return jsonify({
             "output" : output,
-            "success" : build_success
+            "success" : build_success,
+            "tree": make_tree(user)
         })
 
 @app.route("/build", methods=['GET'])
@@ -501,7 +531,12 @@ def build(user):
         return redirect(url_for('index'))
 
     app.logger.info(f"{user}: Ran build script on {directory}")
-    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
+    return jsonify({'result': 'success',
+                    'tree': make_tree(user),
+                    'output': output,
+                    'message': ''
+            
+    })
 
 def generate_pinconstraint(user, config):
     if not os.path.exists(path=config):
@@ -567,6 +602,11 @@ all:
 
 # TODO: use safe_run for synthesis and build and other external calls
 
+# Serves the image for edit icon
+@app.route('/images/edit-icon.png', methods=['GET'])
+def get_edit_icon():
+    # the image is in static/edit_icon.jpeg
+    return send_from_directory('static', 'edit-icon.png')
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
