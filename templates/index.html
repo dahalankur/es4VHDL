@@ -85,7 +85,7 @@
     // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
-        save_file();
+        
         if (current_file) {
             if (!confirm('Are you sure?')) {
                 return;
@@ -110,7 +110,9 @@
                             var editor = ace.edit("editor");
                             editor.setValue("");
                             // Set the filename to empty
-                            document.getElementById("filename_container").innerHTML = "";
+                            document.getElementById("filename_name").innerHTML = "";
+                            // set edited false
+                            editor.session.getUndoManager().markClean();
                             // Set the current file to null
                             current_file = null;
                         }
@@ -518,7 +520,7 @@ function ChangeDropDown() {
                     nested = this.parentElement.querySelector(".nested");
                     console.log("nested is: ", nested);
                     if (nested == null) {
-                        if (current_file && ace.edit("editor").session && !ace.edit("editor").session.getUndoManager().isClean()) {
+                        if (current_file != null && ace.edit("editor").session && !ace.edit("editor").session.getUndoManager().isClean()) {
                             const response = confirm("You have unsaved data, would you like to progress?");
                             if (!response) {
                                 return;
@@ -527,8 +529,10 @@ function ChangeDropDown() {
                         editor = document.getElementById("editor");
                         pathname = this.getAttribute("data-pathname");
                         current_file = pathname;
-                        filename_container_name = document.getElementById("filename_name")
-                        if (current_file) filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);
+                        console.log("pathname is: ", pathname);
+                        filename_container_name = document.getElementById("filename_name");
+                        // filename_container_name is null for some reason
+                        if (current_file) {filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);}
                         if (pathname != "" && pathname != null) {
                             // view the file name
                             filename_container = document.getElementById("filename_container");
