@@ -736,9 +736,9 @@ function ChangeDropDown() {
             fetch('/get_tree')  // Replace '/tree' with the URL of the server endpoint that returns the tree data
                 .then(response => response.json())
                 .then(data => {
-                    let treeHTML = "<ul>";
+                    let treeHTML = "";
                     treeHTML += generateTreeHTML(data);
-                    treeHTML += "</ul>";
+                    treeHTML += "";
                     document.getElementById('filetree').innerHTML = treeHTML;
 
 
