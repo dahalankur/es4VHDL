@@ -85,6 +85,7 @@
     // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
+        save_file();
         if (current_file) {
             if (!confirm('Are you sure?')) {
                 return;
@@ -112,9 +113,6 @@
                             document.getElementById("filename_container").innerHTML = "";
                             // Set the current file to null
                             current_file = null;
-
-
-
                         }
                     }
                 });
@@ -122,7 +120,7 @@
         } else {
             alert("Please select a file to delete from the directory tree");
         }
-
+        editor.session.getUndoManager().markClean();
     }
 
     function delete_folder() {
@@ -130,6 +128,7 @@
             if (!confirm('Are you sure?')) {
                 return;
             }
+            
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
@@ -152,6 +151,7 @@
             selected_dir = null;
         }
         get_and_update_tree();
+        editor.session.getUndoManager().markClean();
     }
 
     function save_file() {
@@ -388,7 +388,6 @@ function ChangeDropDown() {
 <div id="background">
 
     <div class="title"> VHDL Web Editor </div>
-
     <div id="navbar-container">
         <div class="navbar-top" style="margin-left: 10">
             <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
@@ -519,7 +518,7 @@ function ChangeDropDown() {
                     nested = this.parentElement.querySelector(".nested");
                     console.log("nested is: ", nested);
                     if (nested == null) {
-                        if (!ace.edit("editor").session.getUndoManager().isClean()) {
+                        if (current_file && ace.edit("editor").session && !ace.edit("editor").session.getUndoManager().isClean()) {
                             const response = confirm("You have unsaved data, would you like to progress?");
                             if (!response) {
                                 return;
@@ -581,7 +580,8 @@ function ChangeDropDown() {
 
 
                                         // console.log(document.getElementById("editor").innerHTML);
-                                        document.getElementById("netlist-svg").innerHTML = json.contents;
+                                        // make the innerHTML scrollable on overflow 
+                                        document.getElementById("netlist-svg").innerHTML = `<div style="overflow:auto; resize:vertical; min-height: 400px">` + json.contents + `</div>`;
                                         document.getElementById("netlist-svg").style.backgroundColor = "lightgray";
                                     } else {
                                         // replace inner html with ace editor and set mode to vhdl and fill with contents
