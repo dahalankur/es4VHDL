@@ -414,6 +414,7 @@ function ChangeDropDown() {
     <div class="bottom-box">
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
+            
             <!-- Directory tree begins -->
             <!-- <ol id="myUL"> -->
             
@@ -686,7 +687,7 @@ function ChangeDropDown() {
             for (const item of tree.children) {
                 html += `<li class="file-tree-file">`;
                 if (item.children) {
-                    html += `<i class="fa fa-folder" style="color: white"> </i> `;
+                    html += `&nbsp;&nbsp;<i class="fa fa-folder" style="color: white"> </i> `;
                     html += `<span class="caret" id="${item.path}" data-pathname="${item.path}" data-dirname="${item.dirname}" oncontextmenu="window.alert('todo'); return false;">${item.name} </span>`;
                     html += `<ul class="nested">`
                     html += generateTreeHTML(item); // Recursively generate HTML for child nodes
