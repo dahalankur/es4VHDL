@@ -307,6 +307,7 @@ def get_binary_file(user):
 def save_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     body = request.json
+    print(body)
     filename = body["current_file"]
     # Write the data to the file
     try:
@@ -400,17 +401,16 @@ def perform_synthesis(user, to_synthesize):
 def synthesize_file(user):
     return perform_synthesis(user, request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
 
-@app.route("/generate_bin", methods=['GET'])
+@app.route("/generate_bin", methods=['POST', 'GET'])
 @htpasswd.required
 def generate_bin(user):
-    path = os.path.expanduser(f'/h/{user}/.es4/')
-    directory = request.args.get('directory')
-
     # build(user) TODO: assume project has already been built (FOR TESTING ONLY)
-
     # from config.toml, get the toplevel module
     toplevel = ""
     try:
+        path = os.path.expanduser(f'/h/{user}/.es4/')
+        # directory = request.args.get('directory') get this from the post request
+        directory = request.json['directory']
         with open(f'{directory}/config.toml', 'r') as f:
             config = toml.load(f)
             toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
@@ -418,19 +418,29 @@ def generate_bin(user):
         script_dir = os.path.dirname(os.path.realpath(__file__))
         output = safe_run([f"{script_dir}/bin/generate_bin.sh", f'{directory}/{toplevel}'], cwd=os.path.dirname(directory),timeout=30).decode("utf-8")
         # print(script_dir, output, toplevel, directory) # TODO: log here
-    except Exception as error:
-        app.logger.error(f"{user}: Error generating bin file for toplevel entity {toplevel} -> ", error)
-    
-    bitstream = Path(toplevel).stem  +  ".bin"
-    build_success = "Info: Program finished normally." in output
-
-    app.logger.info(f"{user}: Generated bitstream for project {directory}")
-
-    return jsonify({
+        bitstream = Path(toplevel).stem  +  ".bin"
+        build_success = "Info: Program finished normally." in output
+        app.logger.info(f"{user}: Generated bitstream for project {directory}")
+        print('success sent')
+        return jsonify({
             "output" : output,
             "success" : build_success,
             "tree": make_tree(user)
         })
+    except Exception as error:
+        message = f'Error generating bin file for toplevel entity {toplevel}'
+        app.logger.error(f"{user}: {message} -> ", error)
+        return jsonify({
+            "output" : output,
+            "success" : False,
+            "tree": '',
+            "message": message,
+        })
+
+    
+  
+
+   
 
 @app.route("/build", methods=['GET'])
 @htpasswd.required

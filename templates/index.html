@@ -193,20 +193,45 @@
 
     function generate_bin() {
         if (current_dir) {
-            fetch('/generate_bin?' + new URLSearchParams({
-                directory: current_dir
-            }))
-                .then(function (response) {
-                    console.log(response)
-                    if (response.status != 200) {
-                        alert("Error generating the bin file for the project")
-                    }
-                    get_and_update_tree();
+            console.log("Fetching /generate_bin")
+            fetch('/generate_bin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "directory": current_dir
                 })
-        } else {
-            alert("Please select a project to generate bitstream from the directory tree");
-        }
+            })
+                .then(function (response) {
+                    return response.json();
+                }).then(json_data => {
+                    if (json_data.success) {
+                        update_tree(json_data.tree);
+                    } else {
+                        // Set the output window to the output of the build
 
+                        output_window = document.getElementById("output_window")
+                        output_window.style.border = "1px solid red";
+                        output_window.innerHTML = '';
+                        // Add both the message and the output
+                        if (json_data.message) {
+                            output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
+                        }
+                        if (json_data.output) {
+                            output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                        }
+                        output_window.innerHTML += "\n<pre style=\"color: white\">Make sure your project builds first. </pre>";
+
+                    }
+
+                }).catch(error => {
+                    alert("Internal Server Error: " + error);
+                })
+        }
+        else {
+            alert("Please select a folder to generate a binary from");
+        }
     }
 
     function synthesize() {
