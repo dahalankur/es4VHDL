@@ -390,16 +390,22 @@
 
     function build() {
         if (current_dir) {
-            fetch('/build?' + new URLSearchParams({
-                directory: current_dir
-            }))
-                .then(function (response) {
+            fetch('/build', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "directory": current_dir
+                })
+            }).then(function (response) {
                     return response.json();
                 })
                 .then(json_data => {
                     if (json_data.result == "success") {
                         // Update the tree
                         update_tree(json_data.tree);
+                        console.log(json_data.tree);
                         // Update the output window
                         output_window = document.getElementById("output_window")
                         output_window.style.border = "1px solid green";

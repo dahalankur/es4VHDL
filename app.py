@@ -253,7 +253,7 @@ def new_file(user):
         return jsonify({'result': 'fail', 
                         'message': err_msg,
                         "tree":make_tree(path)})
-
+    
     return jsonify({'result': 'success',
                     'message': 'Successfully created the new file',
                     "tree": make_tree(path)})
@@ -323,6 +323,7 @@ def get_zipped_folder(user):
 @app.route('/save_file', methods=["POST"])
 @htpasswd.required
 def save_file(user):
+    print('User in save file', user)
     path = os.path.expanduser(f'/h/{user}/.es4/')
     body = request.json
     print(body)
@@ -443,7 +444,7 @@ def generate_bin(user):
         return jsonify({
             "output" : output,
             "success" : build_success,
-            "tree": make_tree(user)
+            "tree": make_tree(path)
         })
     except Exception as error:
         message = f'Error generating bin file for toplevel entity {toplevel}'
@@ -460,26 +461,36 @@ def generate_bin(user):
 
    
 
-@app.route("/build", methods=['GET'])
+@app.route("/build", methods=['POST'])
 @htpasswd.required
 def build(user):
+    print('User in build: ', user)
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    directory = request.args.get('directory')
+    directory = request.json['directory']
     makefile_path = f'{directory}/Makefile'
     
     # generate Makefile based on config.toml
     makefile = generate_makefile(user, f'{directory}/config.toml')
     if makefile == "":
         app.logger.error(f"{user}: Error getting makefile contents from config.toml")
-        return redirect(url_for('index'))
+        return jsonify({
+            "output" : '',
+            "success" : False,
+            "tree": '',
+            "message": "Error getting makefile contents from config.toml",
+        })
     
     try:
         with open(makefile_path, "w") as f: f.write(makefile)
     except Exception as error:
         message = f'Error writing Makefile contents to {makefile_path}'
         app.logger.error(f"{user}: Error writing Makefile contents to {makefile_path} -> ", error)
-        # TODO: send to frontend
-        return redirect(url_for('index'))
+        return jsonify({
+            "output" : output,
+            "success" : False,
+            "tree": '',
+            "message": message,
+        })
         
     # generate pin constraints file based on config.toml
     pin_constraints = generate_pinconstraint(user, f'{directory}/config.toml')
@@ -578,7 +589,7 @@ def build(user):
 
     app.logger.info(f"{user}: Ran build script on {directory}")
     return jsonify({'result': 'success',
-                    'tree': make_tree(user),
+                    'tree': make_tree(path),
                     'output': output,
                     'message': ''    
     })
