@@ -88,6 +88,7 @@
     // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
+        
         if (current_file) {
             if (!confirm('Are you sure?')) {
                 return;
@@ -112,12 +113,11 @@
                             var editor = ace.edit("editor");
                             editor.setValue("");
                             // Set the filename to empty
-                            document.getElementById("filename_container").innerHTML = "";
+                            document.getElementById("filename_name").innerHTML = "";
+                            // set edited false
+                            editor.session.getUndoManager().markClean();
                             // Set the current file to null
                             current_file = null;
-
-
-
                         }
                     }
                 });
@@ -125,7 +125,7 @@
         } else {
             alert("Please select a file to delete from the directory tree");
         }
-
+        editor.session.getUndoManager().markClean();
     }
 
     function delete_folder() {
@@ -133,6 +133,7 @@
             if (!confirm('Are you sure?')) {
                 return;
             }
+            
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
@@ -155,6 +156,7 @@
             selected_dir = null;
         }
         get_and_update_tree();
+        editor.session.getUndoManager().markClean();
     }
 
     function save_file() {
@@ -391,7 +393,6 @@
 <div id="background">
 
     <div class="title"> VHDL Web Editor </div>
-
     <div id="navbar-container">
         <div class="navbar-top" style="margin-left: 10">
             <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
@@ -416,6 +417,7 @@
     <div class="bottom-box">
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
+            
             <!-- Directory tree begins -->
             <!-- <ol id="myUL"> -->
 
@@ -522,7 +524,7 @@
                     nested = this.parentElement.querySelector(".nested");
                     console.log("nested is: ", nested);
                     if (nested == null) {
-                        if (!ace.edit("editor").session.getUndoManager().isClean()) {
+                        if (current_file != null && ace.edit("editor").session && !ace.edit("editor").session.getUndoManager().isClean()) {
                             const response = confirm("You have unsaved data, would you like to progress?");
                             if (!response) {
                                 return;
@@ -531,8 +533,10 @@
                         editor = document.getElementById("editor");
                         pathname = this.getAttribute("data-pathname");
                         current_file = pathname;
-                        filename_container_name = document.getElementById("filename_name")
-                        if (current_file) filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);
+                        console.log("pathname is: ", pathname);
+                        filename_container_name = document.getElementById("filename_name");
+                        // filename_container_name is null for some reason
+                        if (current_file) {filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);}
                         if (pathname != "" && pathname != null) {
                             // view the file name
                             filename_container = document.getElementById("filename_container");
@@ -584,7 +588,8 @@
 
 
                                         // console.log(document.getElementById("editor").innerHTML);
-                                        document.getElementById("netlist-svg").innerHTML = json.contents;
+                                        // make the innerHTML scrollable on overflow 
+                                        document.getElementById("netlist-svg").innerHTML = `<div style="overflow:auto; resize:vertical; min-height: 400px">` + json.contents + `</div>`;
                                         document.getElementById("netlist-svg").style.backgroundColor = "lightgray";
                                     } else {
                                         // replace inner html with ace editor and set mode to vhdl and fill with contents
@@ -685,7 +690,7 @@
             for (const item of tree.children) {
                 html += `<li class="file-tree-file">`;
                 if (item.children) {
-                    html += `<i class="fa fa-folder" style="color: white"> </i> `;
+                    html += `&nbsp;&nbsp;<i class="fa fa-folder" style="color: white"> </i> `;
                     html += `<span class="caret" id="${item.path}" data-pathname="${item.path}" data-dirname="${item.dirname}" oncontextmenu="window.alert('todo'); return false;">${item.name} </span>`;
                     html += `<ul class="nested">`
                     html += generateTreeHTML(item); // Recursively generate HTML for child nodes
