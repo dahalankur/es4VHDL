@@ -88,7 +88,7 @@
     // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
-        
+
         if (current_file) {
             if (!confirm('Are you sure?')) {
                 return;
@@ -133,7 +133,7 @@
             if (!confirm('Are you sure?')) {
                 return;
             }
-            
+
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
@@ -337,13 +337,23 @@
                 directory: current_dir
             }))
                 .then(function (response) {
-                    if (response.status != 200) {
-                        alert("Error building the project")
-                    } else {
-                        // location.reload(); // TODO: question to ellis -> Why was this added?? We also want to preserve the state of the dir tree after reload, but we can think about that once we've finalized our frontend
-                    }
-                    get_and_update_tree();
+                    return response.json();
                 })
+                .then(json_data => {
+                    if (json_data.result == "success") {
+                        // Update the tree
+                        update_tree(json_data.tree);
+                        // Update the output window
+                        output_window = document.getElementById("output_window")
+                        output_window.style.border = "1px solid green";
+                        output_window.innerHTML = "Output: <pre style=\"color: green\">" + json_data.output + "</pre>";
+                    } else {
+                        output_window = document.getElementById("output_window")
+                        output_window.style.border = "1px solid red";
+                        // Add both the message and the output
+                        output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                    }
+                });
         } else {
             alert("Please select a project to build from the directory tree");
         }
@@ -417,7 +427,7 @@
     <div class="bottom-box">
         <!-- the resizabel file tree  -->
         <div class="resize" id="filetree">
-            
+
             <!-- Directory tree begins -->
             <!-- <ol id="myUL"> -->
 
@@ -536,7 +546,7 @@
                         console.log("pathname is: ", pathname);
                         filename_container_name = document.getElementById("filename_name");
                         // filename_container_name is null for some reason
-                        if (current_file) {filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5);}
+                        if (current_file) { filename_container_name.innerHTML = current_file.substring(current_file.indexOf('.es4/') + 5); }
                         if (pathname != "" && pathname != null) {
                             // view the file name
                             filename_container = document.getElementById("filename_container");
@@ -751,7 +761,7 @@
             }
         }
         function get_and_update_tree() {
-          // Fetch the directory tree data from the server and render it
+            // Fetch the directory tree data from the server and render it
             fetch('/get_tree')  // Replace '/tree' with the URL of the server endpoint that returns the tree data
                 .then(response => response.json())
                 .then(tree => {

@@ -448,6 +448,7 @@ def build(user):
     try:
         with open(makefile_path, "w") as f: f.write(makefile)
     except Exception as error:
+        message = f'Error writing Makefile contents to {makefile_path}'
         app.logger.error(f"{user}: Error writing Makefile contents to {makefile_path} -> ", error)
         # TODO: send to frontend
         return redirect(url_for('index'))
@@ -495,10 +496,13 @@ def build(user):
         # -------- back up ends here --------
 
     except Exception as error:
-        app.logger.error(f"{user}: Error building project {directory} -> ", error)
-        return redirect(url_for('index'))
-        # TODO: send to frontend
-    
+        message = f'Error building project {directory}'
+        app.logger.error(f"{user}: {message}")
+        return jsonify({'result': 'error',
+                        'tree': '',
+                        'output': output,
+                        'message': message
+        })
     # from config.toml, get the toplevel module
     toplevel = ""
     try:
@@ -510,14 +514,24 @@ def build(user):
         if success and toplevel != "":
             out = json.loads(perform_synthesis(user, directory + "/" + toplevel).data)
             if (not out['success']):
-                app.logger.error(f"{user}: Can not synthesize netlist for project {directory}")
-                # TODO: send something to the frontend as well
-        else:
-            app.logger.error(f"{user}: Error building project {directory}. Output: {output}")
-            return redirect(url_for('index'))
-            # TODO: send to frontend
+                message = f'Cannot synthesize netlist for project {directory}'
+                app.logger.error(f"{user}: {message}")
+                return jsonify({'result': 'error',
+                                'tree': '',
+                                'output': output,
+                                'message': message
+                })
+            
 
-        
+        else:
+            message = f"Error performing synthesis on top module {toplevel}"
+            app.logger.error(f"{user}: {message}")
+            
+            return jsonify({'result': 'error',
+                            'tree': '',
+                            'output': output,
+                            'message': message
+            })
         # fix permissions
         for file in os.listdir(directory): 
             # directory
@@ -526,16 +540,19 @@ def build(user):
             else:
                 os.chmod(path=os.path.join(directory, file), mode=0o660)
     except Exception as error:
-        # TODO: send to frontend
-        app.logger.error(f"{user}: Error performing synthesis on top module {toplevel} and/or changing permissions -> ", error)
-        return redirect(url_for('index'))
+        message = f"Error performing synthesis on top module {toplevel} and/or changing permissions"
+        app.logger.error(f"{user}: {message} -> ", error)
+        return jsonify({'result': 'error',
+                        'tree': '',
+                        'output': output,
+                        'message': message
+        })
 
     app.logger.info(f"{user}: Ran build script on {directory}")
     return jsonify({'result': 'success',
                     'tree': make_tree(user),
                     'output': output,
-                    'message': ''
-            
+                    'message': ''    
     })
 
 def generate_pinconstraint(user, config):
