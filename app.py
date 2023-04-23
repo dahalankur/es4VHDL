@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 from datetime import datetime
 import json
 import toml
@@ -299,6 +300,23 @@ def get_binary_file(user):
         app.logger.error(f"{user}: Error opening file {filename} -> ", error)
         # TODO: send to frontend
     # get only the file name
+    return jsonify({"content": ""})
+
+@app.route('/get_zipped_folder', methods=["GET"])
+@htpasswd.required
+def get_zipped_folder(user):
+    data = {"contents" : ""}
+    try:
+        to_zip = request.args.get('directory')
+        app.logger.info(f"{user}: Opened {to_zip}")
+        tempdir = tempfile.mkdtemp()
+        proj_tempdir = tempdir + '/' + os.path.basename(to_zip)
+        shutil.copytree(to_zip, proj_tempdir)
+        output_filename = proj_tempdir + '.zip'
+        shutil.make_archive(proj_tempdir, 'zip', proj_tempdir)
+        return send_file(output_filename, as_attachment=True)
+    except Exception as error:
+        app.logger.error(f"{user}: Error opening file {to_zip} -> ", error)
     return jsonify({"content": ""})
     
 

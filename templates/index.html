@@ -234,6 +234,39 @@
         }
     }
 
+    function zip_folder() {
+        if (current_dir) {
+            fetch('/get_zipped_folder?' + new URLSearchParams({
+                directory: current_dir
+            }))
+            .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const short_filename = current_dir.substring(current_dir.lastIndexOf('/') + 1);
+
+                    console.log("short_filename: " + short_filename);
+                    console.log("url: " + url);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+
+                    a.download = short_filename + ".zip";
+                    document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+                    a.click();
+                })
+                .catch(error => console.error('Error downloading binary file:', error));
+                // .then(function (response) {
+                //     console.log(response)
+                //     if (response.status != 200) {
+                //         alert("Error downloading the project")
+                //     }
+                //     // get_and_update_tree();
+                // })
+        } else {
+            alert("Please select a project to zip");
+        }
+    }
+
     function synthesize() {
         if (current_file) {
             // save the file and send the filename over to the backend
@@ -440,6 +473,7 @@
                 <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
                 <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
                 <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
+                <button class="button-40" id="Download_Project" onclick="zip_folder()">Download Project</button>   
                 <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
                 <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
                 <button class="button-40" id="Build" onclick="build()">Build</button>
