@@ -10,20 +10,36 @@
         while (name.trim() == "") {
             name = prompt("Please provide a Project Name");
         }
-        fetch('/new_project?' + new URLSearchParams({
-            projname: name.trim()
-        })).then(response => {
-            // status code 200
-            // check if redirected is true
-            // if so, we intended to "flash" an error from the backend
-            if (response.redirected) {
-                alert("An error occurred while creating the project. Please check that the project you are trying to create does not already exist.")
-            } else {
-                // location.reload(); // refresh on successful response from the backend
-                get_and_update_tree();
+        fetch('/new_project', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "projname": name.trim(),
+            })
+        }).then(response => {
+            return response.json();
+        }).then(json_data => {
+            if (json_data.result == "success") {
+                update_tree(json_data.tree);
             }
-
-        });
+            else {
+                // Set the output window to the output of the build
+                output_window = document.getElementById("output_window")
+                output_window.style.border = "1px solid red";
+                output_window.innerHTML = '';
+                // Add both the message and the output
+                if (json_data.message) {
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
+                }
+                if (json_data.output) {
+                    output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                }
+                alert('Failed to create new project')
+            }
+        }
+        )
     }
     // TODO: create an exapand all button to expand all directories in the tree
     function new_file() {
@@ -192,6 +208,7 @@
     }
 
     function generate_bin() {
+        await build();
         if (current_dir) {
             fetch('/generate_bin', {
                 method: 'POST',
@@ -207,20 +224,24 @@
                 }).then(json_data => {
                     if (json_data.success) {
                         update_tree(json_data.tree);
-                    } else {
-                        // Set the output window to the output of the build
 
                         output_window = document.getElementById("output_window")
+                        output_window.style.border = "1px solid green";
+                        output_window.innerHTML = '<pre style=\"color: white\">Successfully generated bin file </pre>';
+                    } else {
+                        // Set the output window to the output of the build
+                        output_window = document.getElementById("output_window")
+                        output_window.innerHTML = "\n<pre style=\"color: white; font-size: 20\">Make sure you build your project first, and assign correct pins in config.toml. See the bottom of the output below for more information</pre><hr />";
                         output_window.style.border = "1px solid red";
-                        output_window.innerHTML = '';
+                        
                         // Add both the message and the output
                         if (json_data.message) {
-                            output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
+                            output_window.innerHTML += "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
                         }
                         if (json_data.output) {
                             output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
                         }
-                        output_window.innerHTML += "\n<pre style=\"color: white\">Make sure your project builds first. </pre>";
+                        
 
                     }
 
@@ -238,7 +259,7 @@
             fetch('/get_zipped_folder?' + new URLSearchParams({
                 directory: current_dir
             }))
-            .then(response => response.blob())
+                .then(response => response.blob())
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
                     const short_filename = current_dir.substring(current_dir.lastIndexOf('/') + 1);
@@ -254,13 +275,13 @@
                     a.click();
                 })
                 .catch(error => console.error('Error downloading binary file:', error));
-                // .then(function (response) {
-                //     console.log(response)
-                //     if (response.status != 200) {
-                //         alert("Error downloading the project")
-                //     }
-                //     // get_and_update_tree();
-                // })
+            // .then(function (response) {
+            //     console.log(response)
+            //     if (response.status != 200) {
+            //         alert("Error downloading the project")
+            //     }
+            //     // get_and_update_tree();
+            // })
         } else {
             alert("Please select a project to zip");
         }
@@ -389,7 +410,15 @@
 
 
     function build() {
+        const loader = document.getElementsByClassName('lds-ring')[0];
+        loader.style.display = "block";
         if (current_dir) {
+            // lds-dual-ring is the element classname
+           
+        
+
+            //  activate the loader
+        
             fetch('/build', {
                 method: 'POST',
                 headers: {
@@ -399,8 +428,8 @@
                     "directory": current_dir
                 })
             }).then(function (response) {
-                    return response.json();
-                })
+                return response.json();
+            })
                 .then(json_data => {
                     if (json_data.result == "success") {
                         // Update the tree
@@ -419,7 +448,9 @@
                 });
         } else {
             alert("Please select a project to build from the directory tree");
+        
         }
+        loader.style.display = 'none';
     }
 
     function analyze() {
@@ -466,6 +497,7 @@
 <div id="background">
 
     <div class="title"> VHDL Web Editor </div>
+    <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
     <div id="navbar-container">
         <div class="navbar-top" style="margin-left: 10">
             <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
@@ -478,7 +510,7 @@
                 <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
                 <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
                 <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
-                <button class="button-40" id="Download_Project" onclick="zip_folder()">Download Project</button>   
+                <button class="button-40" id="Download_Project" onclick="zip_folder()">Download Project</button>
                 <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
                 <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
                 <button class="button-40" id="Build" onclick="build()">Build</button>
@@ -507,8 +539,7 @@
                 <i class="fa fa-file-o" style="color: gray"></i>
                 {%- endif %}
                 <span class="caret" id="{{ item.path }}" data-pathname="{{ item.path }}"
-                    data-dirname="{{ item.dirname }}" oncontextmenu="window.alert('todo');
-                        return false;">
+                    data-dirname="{{ item.dirname }}">
                     {{ item.name }}
                 </span>
                 {%- if item.children is defined -%}
@@ -765,7 +796,7 @@
                 html += `<li class="file-tree-file">`;
                 if (item.children) {
                     html += `&nbsp;&nbsp;<i class="fa fa-folder" style="color: white"> </i> `;
-                    html += `<span class="caret" id="${item.path}" data-pathname="${item.path}" data-dirname="${item.dirname}" oncontextmenu="window.alert('todo'); return false;">${item.name} </span>`;
+                    html += `<span class="caret" id="${item.path}" data-pathname="${item.path}" data-dirname="${item.dirname}">${item.name} </span>`;
                     html += `<ul class="nested">`
                     html += generateTreeHTML(item); // Recursively generate HTML for child nodes
                     html += `</ul><br /><br />`
@@ -783,7 +814,6 @@
                     else {
                         html += `<i class="fa fa-file-o" style="color: gray"></i>`;
                     }
-                    //   html += `<i class="fa fa-file-o" style="color: gray"></i>`;
                     html += `<span class="caret" id="${item.path}" data-pathname="${item.path}" data-dirname="${item.dirname}" oncontextmenu="window.alert('todo'); return false;"> ${item.name} </span>`;
                 }
                 html += `</li>`;

@@ -181,11 +181,12 @@ def new_folder(user):
                          "message": err_msg })
  
 
-@app.route('/new_project', methods = ['GET'])
+@app.route('/new_project', methods = ['POST'])
 @htpasswd.required
 def new_project(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    projname = path + request.args.get('projname')
+    projname = path + request.json['projname']
+    # projname = path + request.args.get('projname')
 
     if not os.path.exists(path=projname):
         try:
