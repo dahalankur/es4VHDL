@@ -129,7 +129,7 @@ def delete_folder(user):
     if os.path.exists(path=to_delete):
         if not os.path.isdir(to_delete):
             err_msg = f"{user}: Cannot delete non-folder {to_delete}"
-            app.logger.error(err_msg);
+            app.logger.error(err_msg)
             # TODO: send message to frontend about folder not being able to be deleted
             return jsonify({ "tree": make_tree(path),
                              "result": 'fail', 
@@ -142,51 +142,17 @@ def delete_folder(user):
             app.logger.error(f"{user}: Error deleting folder {to_delete} -> ", error)
             # TODO: send to frontend
     else:
-        # TODO: send message to frontend about folder not existing
+        # TODO: send message to frontend about folder not existing. we sent this but frontend does not reciprocate
         app.logger.error(f"{user}: Folder {to_delete} does not exist")
         return jsonify({ "tree": make_tree(path), "result": 'fail', "message": f'Folder {to_delete} does not exist' })
     return jsonify({ "tree": make_tree(path), "result": 'success', "message": '' })
 
-
-@app.route('/new_folder', methods = ['GET'])
-@htpasswd.required
-def new_folder(user):
-    path = os.path.expanduser(f'/h/{user}/.es4/')
-    current_dir = request.args.get('current_dir')
-    new_dir = current_dir + "/" + request.args.get('dirname')
-    
-    if os.path.exists(path=current_dir):
-        if os.path.exists(path=new_dir):
-            # TODO: send message to frontend about directory already existing
-            err_msg = f"{user}: Directory {new_dir} already exists"
-            app.logger.error(err_msg)
-            return jsonify({ "tree": make_tree(path), 
-                            "result": 'fail', 
-                            "message": err_msg })
-    
-        try:
-        # Create the new directory with appropriate permissions
-            os.mkdir(path=new_dir)
-            os.chmod(path=new_dir, mode=0o2775)
-            app.logger.info(f"{user}: Created directory {new_dir}")
-        except Exception as error:
-            app.logger.error(f"{user}: Error creating directory and/or changing permissions -> ", error)
-            # TODO: send to frontend
-    else:
-        # TODO: send message to frontend about file not being able to be created
-        err_msg = f"{user}: Path to directory {new_dir} does not exist"
-        app.logger.error(err_msg)
-        return jsonify({ "tree": make_tree(path), 
-                         "result": 'fail', 
-                         "message": err_msg })
- 
 
 @app.route('/new_project', methods = ['POST'])
 @htpasswd.required
 def new_project(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     projname = path + request.json['projname']
-    # projname = path + request.args.get('projname')
 
     if not os.path.exists(path=projname):
         try:
@@ -286,7 +252,6 @@ def get_file(user):
         app.logger.info(f"{user}: Opened {filename}")
     except Exception as error:
         app.logger.error(f"{user}: Error opening file {filename} -> ", error)
-        # TODO: send to frontend
     return jsonify(data)
 
 @app.route('/get_binary_file', methods=["GET"])

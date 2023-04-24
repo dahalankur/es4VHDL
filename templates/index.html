@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<!-- TODO: add directory icons besides directories, and file icons besides files in the tree! also add an "expand all" button -->
+<!-- TODO: add directory icons besides directories, and file icons besides files in the tree! -->
 <script>
     function enable_loader() {
         const loader = document.getElementsByClassName('lds-ring')[0];
@@ -50,7 +50,7 @@
         }
         )
     }
-    // TODO: create an exapand all button to expand all directories in the tree
+
     function new_file() {
         if (!current_dir) {
             alert("Please select a parent folder for the new file");
@@ -83,34 +83,6 @@
         }
 
     }
-
-    function new_folder() {
-        if (current_dir) {
-            var name = ""
-            while (name.trim() == "") {
-                name = prompt("Please provide a valid directory name");
-            }
-            fetch('/new_folder?' + new URLSearchParams({
-                dirname: name.trim(),
-                current_dir: current_dir
-            }))
-                .then(response => {
-                    console.log(response.text);
-                    if (response.redirected) {
-                        alert("Something went wrong (TODO)");
-                        // console.log(response.text);
-                    } else {
-                        // location.reload(); // refresh on successful response from the backend
-
-                    }
-                });
-        } else {
-            alert("Please select a parent folder for the new folder");
-        }
-        get_and_update_tree();
-    }
-
-    // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
 
     function delete_file() {
 
@@ -172,7 +144,6 @@
                         if (response.redirected) {
                             alert("error: something is wrong")
                         } else {
-                            // location.reload(); // refresh on successful response from the backend
                             // TODO: get and update tree here.
                         }
                     }
@@ -514,7 +485,6 @@
             <div id="dropdownButtonTop" style="margin-left: 10">
                 <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
                 <button class="button-40" id="New_File" onclick="new_file()">New File</button>
-                <!-- <button class="button-40"  id="New_Folder" onclick="new_folder()">New Folder</button> -->
                 <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
                 <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
                 <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
@@ -522,8 +492,7 @@
                 <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
                 <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
                 <button class="button-40" id="Build" onclick="build()">Build</button>
-                <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream for
-                    Project</button>
+                <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream</button>
             </div>
 
         </div>
@@ -728,7 +697,7 @@
                                         document.getElementById("editor").style.fontSize = '14px';
 
                                         editor.setValue(json.contents, -1);
-                                        console.log(json.contents);
+                                        // console.log(json.contents);
                                     }
                                     editor.session.getUndoManager().markClean();
                                 });
@@ -737,14 +706,11 @@
                             if (selected_dir != null) {
                                 selected_dir.style.border = ""; // unselect the old color
                             }
-                            console.log("This line has run")
                             selected_dir = this;
                         }
 
                     } else {
-                        console.log("nested is not null");
                         nested.classList.toggle("active");
-                        console.log("Problem: This line of code is not reached in the new tree: Active toggled");
                         this.classList.toggle("caret-down");
                         this.style.backgroundColor = "green";
 
