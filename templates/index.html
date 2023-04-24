@@ -4,6 +4,15 @@
 
 <!-- TODO: add directory icons besides directories, and file icons besides files in the tree! also add an "expand all" button -->
 <script>
+    function enable_loader() {
+        const loader = document.getElementsByClassName('lds-ring')[0];
+        // const loader = loaders.children[0];
+        loader.style.display= 'inline-block';
+    }
+    function disable_loader() {
+        const loader = document.getElementsByClassName('lds-ring')[0];
+        loader.style.display= 'none';
+    }
     var most_recent_project = null;
     function new_project() {
         var name = ""
@@ -208,7 +217,7 @@
     }
 
     function generate_bin() {
-        await build();
+        build();
         if (current_dir) {
             fetch('/generate_bin', {
                 method: 'POST',
@@ -407,11 +416,8 @@
         }
         return warnings;
     }
-
-
     function build() {
-        const loader = document.getElementsByClassName('lds-ring')[0];
-        loader.style.display = "block";
+        enable_loader();
         if (current_dir) {
             // lds-dual-ring is the element classname
            
@@ -444,13 +450,15 @@
                         output_window.style.border = "1px solid red";
                         // Add both the message and the output
                         output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                        disable_loader();
                     }
                 });
         } else {
             alert("Please select a project to build from the directory tree");
+            disable_loader();
         
         }
-        loader.style.display = 'none';
+        
     }
 
     function analyze() {

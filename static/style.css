@@ -291,8 +291,12 @@ ul {
 }
 .lds-ring {
   display: none;
-  position: relative;
+  position: absolute;
+  /* Make the top half way down the page */
+  top: 50%;
+  left: 50%;
   width: 80px;
+  z-index: 1;
   height: 80px;
 }
 .lds-ring div {
