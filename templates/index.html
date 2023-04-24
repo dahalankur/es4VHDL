@@ -15,6 +15,7 @@
     }
     var most_recent_project = null;
     function new_project() {
+        enable_loader();
         var name = ""
         while (name.trim() == "") {
             name = prompt("Please provide a Project Name");
@@ -49,9 +50,11 @@
             }
         }
         )
+        disable_loader();
     }
     // TODO: create an exapand all button to expand all directories in the tree
     function new_file() {
+        enable_loader();
         if (!current_dir) {
             alert("Please select a parent folder for the new file");
         }
@@ -81,10 +84,11 @@
                     }
                 });
         }
-
+        disable_loader();
     }
 
     function new_folder() {
+        enable_loader();
         if (current_dir) {
             var name = ""
             while (name.trim() == "") {
@@ -95,19 +99,19 @@
                 current_dir: current_dir
             }))
                 .then(response => {
-                    console.log(response.text);
-                    if (response.redirected) {
-                        alert("Something went wrong (TODO)");
-                        // console.log(response.text);
-                    } else {
-                        // location.reload(); // refresh on successful response from the backend
-
+                    return response.json();
+                }).then(json_data => {
+                    if (json_data.result == "success") {
+                        update_tree(json_data.tree);
+                    }
+                    else {
+                        alert('Failed to create new folder')
                     }
                 });
         } else {
             alert("Please select a parent folder for the new folder");
         }
-        get_and_update_tree();
+        disable_loader();
     }
 
     // TODO: feature proposal: on refresh, remember the file tree state (which folders are open) and restore it (maybe from local storage/session, etc.)
@@ -118,6 +122,7 @@
             if (!confirm('Are you sure?')) {
                 return;
             }
+            enable_loader();
             fetch('/delete_file?' + new URLSearchParams({
                 filename: current_file
             }))
@@ -151,6 +156,7 @@
             alert("Please select a file to delete from the directory tree");
         }
         editor.session.getUndoManager().markClean();
+        disable_loader();
     }
 
     function delete_folder() {
@@ -158,7 +164,7 @@
             if (!confirm('Are you sure?')) {
                 return;
             }
-
+            enable_loader();
             fetch('/delete_folder?' + new URLSearchParams({
                 current_dir: current_dir
             }))
@@ -182,6 +188,7 @@
         }
         get_and_update_tree();
         editor.session.getUndoManager().markClean();
+        disable_loader();
     }
 
     function save_file() {
@@ -217,6 +224,7 @@
     }
 
     function generate_bin() {
+        enable_loader();
         build();
         if (current_dir) {
             fetch('/generate_bin', {
@@ -261,6 +269,7 @@
         else {
             alert("Please select a folder to generate a binary from");
         }
+        disable_loader();
     }
 
     function zip_folder() {
@@ -297,7 +306,9 @@
     }
 
     function synthesize() {
+
         if (current_file) {
+            enable_loader();
             // save the file and send the filename over to the backend
             save_file()
             fetch('/synthesize_file?' + new URLSearchParams({
@@ -325,6 +336,7 @@
         } else {
             alert("Please select a file to synthesize from the directory tree");
         }
+        disable_loader();
     }
     // This function depends on this code here:
     // https://github.com/jakwings/toml-j0.4
@@ -462,7 +474,9 @@
     }
 
     function analyze() {
+        
         if (current_file) {
+            enable_loader();
             // save the file and send the filename over to the backend
             save_file()
 
@@ -485,6 +499,7 @@
         } else {
             alert("Please select a file to analyze from the directory tree");
         }
+        disable_loader();
     }
 </script>
 <script>
