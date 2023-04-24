@@ -7,11 +7,13 @@
     function enable_loader() {
         const loader = document.getElementsByClassName('lds-ring')[0];
         // const loader = loaders.children[0];
-        loader.style.display= 'inline-block';
+        loader.style.display = 'inline-block';
+        console.log('loader enabled')
     }
     function disable_loader() {
         const loader = document.getElementsByClassName('lds-ring')[0];
-        loader.style.display= 'none';
+        loader.style.display = 'none';
+        console.log('loader disabled')
     }
     var most_recent_project = null;
     function new_project() {
@@ -48,9 +50,10 @@
                 }
                 alert('Failed to create new project')
             }
+            disable_loader();
         }
         )
-        disable_loader();
+
     }
 
     function new_file() {
@@ -82,84 +85,103 @@
                     else {
                         update_tree(data.tree);
                     }
+                    disable_loader();
                 });
         }
-        disable_loader();
     }
 
     function delete_file() {
-
-        if (current_file) {
-            if (!confirm('Are you sure?')) {
-                return;
-            }
-            enable_loader();
-            fetch('/delete_file?' + new URLSearchParams({
-                filename: current_file
-            }))
-                .then(response => {
-                    if (response.status != 200) {
-                        alert("An error occurred while deleting the file. Please check that the file you are trying to delete exists.")
-                    } else {
-                        // status code 200
-                        // check if redirected is true
-                        // if so, we intended to "flash" an error from the backend
-                        if (response.redirected) {
-                            alert("error: something is wrong")
-                        } else {
-                            // No idea if this is needed
-                            get_and_update_tree();
-                            // filename_container 
-                            // Set the text editor to empty
-                            var editor = ace.edit("editor");
-                            editor.setValue("");
-                            // Set the filename to empty
-                            document.getElementById("filename_name").innerHTML = "";
-                            // set edited false
-                            editor.session.getUndoManager().markClean();
-                            // Set the current file to null
-                            current_file = null;
-                        }
-                    }
-                });
-            current_file = null;
-        } else {
+        if (!current_file) {
             alert("Please select a file to delete from the directory tree");
+            return;
         }
-        editor.session.getUndoManager().markClean();
-        disable_loader();
-    }
+
+        if (!confirm('Are you sure?')) {
+            return;
+        }
+        enable_loader();
+        fetch('/delete_file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filename: current_file
+            })
+        }).then(response => response.json()
+        ).then(data => {
+            if (data.result == 'success') {
+                update_tree(data.tree);
+                // filename_container 
+                // Set the text editor to empty
+                var editor = ace.edit("editor");
+                editor.setValue("");
+                // Set the filename to empty
+                document.getElementById("filename_name").innerHTML = "";
+                // set edited false
+                editor.session.getUndoManager().markClean();
+                // Set the current file to null
+                current_file = null;
+                disable_loader();
+                editor.session.getUndoManager().markClean();
+            }
+            else {
+                alert(data.message);
+            }
+            disable_loader();
+        }).catch(error => {
+            console.log(error);
+            alert("An error occurred while deleting the file. Please check that the file you are trying to delete exists.", error)
+            disable_loader();
+        });
+    };
+
+
 
     function delete_folder() {
-        if (current_dir) {
-            if (!confirm('Are you sure?')) {
-                return;
-            }
-            enable_loader();
-            fetch('/delete_folder?' + new URLSearchParams({
-                current_dir: current_dir
-            }))
-                .then(response => {
-                    if (response.status != 200) {
-                        alert("An error occurred while deleting the folder. Please check that the folder you are trying to delete exists.")
-                    } else {
-                        // status code 200
-                        // check if redirected is true
-                        // if so, we intended to "flash" an error from the backend
-                        if (response.redirected) {
-                            alert("error: something is wrong")
-                        } else {
-                            // TODO: get and update tree here.
-                        }
-                    }
-                });
-            current_dir = null;
-            selected_dir = null;
+        if (!current_dir) {
+            alert("Please select a folder to delete from the directory tree");
+            return;
         }
-        get_and_update_tree();
-        editor.session.getUndoManager().markClean();
-        disable_loader();
+        if (!confirm('Are you sure?')) {
+            return;
+        }
+        enable_loader();
+        fetch('/delete_folder?' + new URLSearchParams({
+            current_dir: current_dir
+        }))
+            .then(response => response.json()).then(json_data => {
+                if (json_data.result == 'success') {
+                    update_tree(json_data.tree);
+                    // filename_container 
+                    // Set the text editor to empty
+                    var editor = ace.edit("editor");
+                    editor.setValue("");
+                    // Set the filename to empty
+                    document.getElementById("filename_name").innerHTML = "";
+                    // set edited false
+                    editor.session.getUndoManager().markClean();
+                    // Set the current file to null
+                    current_file = null;
+
+                    editor.session.getUndoManager().markClean();
+                    current_dir = null;
+                    selected_dir = null;
+                }
+                else {
+                    alert("Error:", json_data.message);
+
+                }
+                disable_loader();
+
+            }).catch(error => {
+                console.log(error);
+                alert("An error occurred while deleting the folder. Please check that the folder you are trying to delete exists.", error)
+                disable_loader();
+            });
+
     }
+
 
     function save_file() {
         if (!current_file) {
@@ -194,9 +216,10 @@
     }
 
     function generate_bin() {
-        enable_loader();
-        build();
+
+
         if (current_dir) {
+            enable_loader();
             fetch('/generate_bin', {
                 method: 'POST',
                 headers: {
@@ -220,7 +243,7 @@
                         output_window = document.getElementById("output_window")
                         output_window.innerHTML = "\n<pre style=\"color: white; font-size: 20\">Make sure you build your project first, and assign correct pins in config.toml. See the bottom of the output below for more information</pre><hr />";
                         output_window.style.border = "1px solid red";
-                        
+
                         // Add both the message and the output
                         if (json_data.message) {
                             output_window.innerHTML += "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
@@ -228,18 +251,18 @@
                         if (json_data.output) {
                             output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
                         }
-                        
-
+                        disable_loader();
                     }
 
                 }).catch(error => {
                     alert("Internal Server Error: " + error);
+                    disable_loader();
                 })
         }
         else {
             alert("Please select a folder to generate a binary from");
         }
-        disable_loader();
+
     }
 
     function zip_folder() {
@@ -291,22 +314,15 @@
                     output_window.innerHTML = `Output: <pre style="color: white">` + json.output + "</pre>" // TODO: change this, and handle errors
                     // TODO: change color of border based on json response
                     output_window.style.border = "1px solid white";
-
-                    // if (json.output.trim() != "" && !json.success) {
-                    //     output_window.innerHTML = "Output: <pre style="color: white">" + json.output + "</pre>"
-                    //     output_window.style.border = "1px solid red";
-                    // } else {
-                    //     output_window.style.border = "1px solid green";
-                    //     output_window.innerHTML = "Output: <pre style=\"color: green\">No errors!</pre>";
-                    //     alert("No errors")
-                    // }
+                    disable_loader();
                 }), error => {
                     console.log(error);
+                    disable_loader();
                 };
         } else {
             alert("Please select a file to synthesize from the directory tree");
         }
-        disable_loader();
+
     }
     // This function depends on this code here:
     // https://github.com/jakwings/toml-j0.4
@@ -399,52 +415,48 @@
         return warnings;
     }
     function build() {
-        enable_loader();
-        if (current_dir) {
-            // lds-dual-ring is the element classname
-           
-        
-
-            //  activate the loader
-        
-            fetch('/build', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "directory": current_dir
-                })
-            }).then(function (response) {
-                return response.json();
-            })
-                .then(json_data => {
-                    if (json_data.result == "success") {
-                        // Update the tree
-                        update_tree(json_data.tree);
-                        console.log(json_data.tree);
-                        // Update the output window
-                        output_window = document.getElementById("output_window")
-                        output_window.style.border = "1px solid green";
-                        output_window.innerHTML = "Output: <pre style=\"color: green\">" + json_data.output + "</pre>";
-                    } else {
-                        output_window = document.getElementById("output_window")
-                        output_window.style.border = "1px solid red";
-                        // Add both the message and the output
-                        output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
-                        disable_loader();
-                    }
-                });
-        } else {
+        if (!current_dir) {
             alert("Please select a project to build from the directory tree");
-            disable_loader();
-        
+            return;
         }
-        
+        enable_loader();
+        fetch('/build', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "directory": current_dir
+            })
+        }).then(function (response) {
+            return response.json();
+        })
+            .then(json_data => {
+                if (json_data.result == "success") {
+                    // Update the tree
+                    update_tree(json_data.tree);
+                    console.log(json_data.tree);
+                    // Update the output window
+                    output_window = document.getElementById("output_window")
+                    output_window.style.border = "1px solid green";
+                    output_window.innerHTML = "Output: <pre style=\"color: green\">" + json_data.output + "</pre>";
+                } else {
+                    output_window = document.getElementById("output_window")
+                    output_window.style.border = "1px solid red";
+                    // Add both the message and the output
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                }
+                disable_loader();
+            }).catch(error => {
+                alert('Internal Server Error: ' + error);
+                console.log(error);
+                disable_loader();
+            });
+
     }
 
     function analyze() {
-        
+
         if (current_file) {
             enable_loader();
             // save the file and send the filename over to the backend
@@ -463,13 +475,15 @@
                         output_window.style.border = "1px solid green";
                         output_window.innerHTML = "Output: <pre style=\"color: green\">No errors!</pre>";
                     }
+                    disable_loader();
                 }), error => {
                     console.log(error);
+                    disable_loader();
                 };
         } else {
             alert("Please select a file to analyze from the directory tree");
         }
-        disable_loader();
+
     }
 </script>
 <script>
@@ -490,7 +504,12 @@
 <div id="background">
 
     <div class="title"> VHDL Web Editor </div>
-    <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+    <div class="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
     <div id="navbar-container">
         <div class="navbar-top" style="margin-left: 10">
             <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
