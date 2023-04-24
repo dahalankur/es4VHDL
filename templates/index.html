@@ -487,14 +487,65 @@
     }
 </script>
 <script>
+    //     <button id='button-40' onclick="dropdown_create()">Create Things</button>
+    // <button id='button-40' onclick="dropdown_delete()">Delete Things</button>
+    // <button id='button-40' onclick="dropdown_build()">Build Things</button>
+    // dropdownCreate
+    // dropdownDelete
+    // dropdownBuild
+    // dropdownOther
+
+    function dropdown_create() {
+        if (document.getElementById("dropdownCreate").style.display == "inline-block") {
+            // remove border from button
+            document .getElementById('btn_dropdown_create').setAttribute('style', 'border: 1px solid #5e1c1c');
+
+            document.getElementById("dropdownCreate").style.display = "none";
+            
+            return;
+        }
+        // set border to solid green 2px
+        document.getElementById('btn_dropdown_create').setAttribute('style', 'border: solid green 5px');
+        document.getElementById("dropdownCreate").style.display = "inline-block";
+    }
+    function dropdown_delete() {
+        if (document.getElementById("dropdownDelete").style.display == "inline-block") {
+            document.getElementById("dropdownDelete").style.display = "none";
+            document .getElementById('btn_dropdown_delete').setAttribute('style', 'border: 1px solid #5e1c1c');
+            return;
+        }
+        // set border to solid green 2px
+        document.getElementById('btn_dropdown_delete').setAttribute('style', 'border: solid green 5px');
+        document.getElementById("dropdownDelete").style.display = "inline-block";
+    }
+    function dropdown_build() {
+        if (document.getElementById("dropdownBuild").style.display == "inline-block") {
+            document.getElementById("dropdownBuild").style.display = "none";
+            document .getElementById('btn_dropdown_build').setAttribute('style', 'border: 1px solid #5e1c1c');
+            return;
+        }
+        document.getElementById('btn_dropdown_build').setAttribute('style', 'border: solid green 5px');
+        document.getElementById("dropdownBuild").style.display = "inline-block";
+    }
+    function dropdown_other() {
+        if (document.getElementById("dropdownOther").style.display == "inline-block") {
+            document.getElementById("dropdownOther").style.display = "none";
+            document .getElementById('btn_dropdown_other').setAttribute('style', 'border: 1px solid #5e1c1c');
+            return;
+        }
+        document.getElementById('btn_dropdown_other').setAttribute('style', 'border: solid green 5px');
+        document.getElementById("dropdownOther").style.display = "inline-block";
+    }
+</script>
+<script>
     function ChangeDropDown() {
         var dropdown = document.getElementById("dropdownButtonTop");
         if (dropdown.style.display === "none") {
             dropdown.style.display = "block";
-            document.getElementById("DropDown").innerHTML = "Show Less";
+            document.getElementById("DropDown").innerHTML = "Hide Options";
         } else {
             dropdown.style.display = "none";
-            document.getElementById("DropDown").innerHTML = "Show More";
+            document.getElementById("DropDown").innerHTML = "Show Options";
         }
     }
 </script>
@@ -512,21 +563,55 @@
     </div>
     <div id="navbar-container">
         <div class="navbar-top" style="margin-left: 10">
-            <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
-            <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
-            <button class="button-33" id="DropDown" onclick="ChangeDropDown()">Show Less </button>
-            <div id="dropdownButtonTop" style="margin-left: 10">
-                <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
+            <button class="button-33" id="DropDown" style="margin-left: 10" onclick="ChangeDropDown()">Hide Options</button>
+            <div id="dropdownButtonTop" style="margin-left: 10;">
+                <!-- <button class="button-40" id="New_Project" onclick="new_project()">New Project</button>
                 <button class="button-40" id="New_File" onclick="new_file()">New File</button>
                 <button class="button-40" id="Delete_Folder" onclick="delete_folder()">Delete Project</button>
-                <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button>
-                <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
+                <button class="button-40" id="Delete_File" onclick="delete_file()">Delete File</button> -->
+                <!-- <button class="button-40" id="Save_File" onclick="save_file()">Save</button>
                 <button class="button-40" id="Download_Project" onclick="zip_folder()">Download Project</button>
-                <button class="button-40" id="Analyze" onclick="analyze()">Analyze</button>
-                <button class="button-40" role="button" onclick="synthesize()">Synthesize</button>
-                <button class="button-40" id="Build" onclick="build()">Build</button>
-                <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream</button>
+               -->
+                <!-- <button class="button-40" id="Build" onclick="build()">Build</button>
+                <button class="button-40" id="Generate_Bin" onclick="generate_bin()">Generate Bitstream</button> -->
+                <button class='button-31' id="btn_dropdown_create" style="border: 5px solid green" onclick="dropdown_create()">Show create buttons</button>
+                <button class='button-31' id="btn_dropdown_delete" onclick="dropdown_delete()">Show delete buttons</button>
+                <button class='button-31' id="btn_dropdown_build" onclick="dropdown_build()">Show build button</button>
+                <button class='button-31' id="btn_dropdown_other" onclick="dropdown_other()">Show other buttons</button>
             </div>
+            <div>
+                <div id="dropdownCreate" style="display: inline-block;"> 
+                    <button class="button-40" id="New_Project" onclick="new_project()"><i class="fa fa-folder-o" style="color: white"> </i> &nbsp;
+                        New 
+                        Project</button>
+                    <button class="button-40" id="New_File" onclick="new_file()"> <i class= "fa fa-file-code-o" style="color: white"> </i> &nbsp;
+                        New File</button>
+                </div>
+                <div id="dropdownDelete" style="display: none">
+                     <button class="button-40" id="Delete_Folder" onclick="delete_folder()"> 
+                        <!-- I want an X icon -->
+                        <i class="fa fa-ban" aria-hidden="true"></i> &nbsp;
+
+                        Delete Project</button>
+                    <button class="button-40" id="Delete_File" onclick="delete_file()"> <i class="fa fa-trash" style="color: white"> </i> &nbsp;
+                        Delete File</button>
+                </div>
+                <div id="dropdownBuild" style="display: none">
+                    <button class="button-40" id="Analyze" onclick="analyze()"> <i class="fa fa-search" aria-hidden="true"></i>
+                         Analyze</button>
+                    <button class="button-40" id="Build" onclick="build()"> <i class="fa fa-th" aria-hidden="true"></i>
+                         Build</button>
+                    <button class="button-40" id="Generate_Bin" onclick="generate_bin()"> <i class="fa fa-bolt" aria-hidden="true"></i> Generate Bitstream</button>
+                    <button class="button-40" role="button" onclick="synthesize()"> <i class="fa fa-fire" aria-hidden="true"></i> Synthesize</button> 
+                </div>
+                <div id="dropdownOther" style="display: none">
+                    <button class="button-40" id="Save_File" onclick="save_file()"> <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                         Save</button>
+                    <button class="button-40" id="Download_Project" onclick="zip_folder()"> <i class="fa fa-download" aria-hidden="true"></i>
+                         Download Project</button>
+                </div>
+            </div>
+            
 
         </div>
     </div>
@@ -603,6 +688,8 @@
         saveIndicator.src = src;
     });
 </script>
+
+
 
 <body onbeforeunload="if (!document.getElementById('editor').session.getUndoManager().isClean()) {
     return 'save changes'; }
