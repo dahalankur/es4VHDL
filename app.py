@@ -67,8 +67,6 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
-# TODO: change this, simplify the workflow later when dealing with frontend
-# TODO: Update the size of the file tree and the editor window to be correct.
 def make_tree(path):
     tree = dict(name=os.path.basename(path), children=[], path="", dirname=path)
     try: lst = os.listdir(path)
@@ -83,15 +81,6 @@ def make_tree(path):
                 # This is not a directory
                 tree['children'].append(dict(name=name, path=fn))
     return tree
-
-# TODO: Eventually remove this route, as every other route should
-# return the tree, and the tree should be updated on the frontend
-# This therefore does not to be called ever.
-@app.route('/get_tree', methods = ['GET'])
-@htpasswd.required
-def get_tree(user):
-    path = os.path.expanduser(f'/h/{user}/.es4/')
-    return jsonify(make_tree(path))
 
 @app.route('/delete_file', methods = ['POST'])
 @htpasswd.required
@@ -186,9 +175,17 @@ src       = []   # List all vhd files you need to build your project
             app.logger.info(f"{user}: Created project {projname}")
         except Exception as error:
             app.logger.error(f"{user}: Error creating project and/or changing permissions -> ", error)
+            return jsonify({ "tree": "",
+                    "result": 'fail', 
+                    "message": f"Error creating project and/or changing permissions -> " + error})
+                    
             # TODO: send this to frontend
     else:
         app.logger.error(f"{user}: Project {projname} already exists")
+        return jsonify({ "tree": "",
+                    "result": 'fail', 
+                    "message": f"Project {projname} already exists"})
+                    
         # TODO: send this to frontend
     return jsonify({ "tree": make_tree(path), 
                     "result": 'success', 
@@ -777,3 +774,4 @@ def get_edit_icon():
 
 if __name__=="__main__":
     app.run(host='localhost', port=8080, debug=True, use_reloader=True)
+

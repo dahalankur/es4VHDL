@@ -21,6 +21,10 @@
         var name = ""
         while (name.trim() == "") {
             name = prompt("Please provide a Project Name");
+            if (name == null) {
+                disable_loader();
+                return;
+            }
         }
         fetch('/new_project', {
             method: 'POST',
@@ -52,7 +56,10 @@
             }
             disable_loader();
         }
-        )
+        ).catch(error=> {
+            alert(error);
+            disable_loader();
+        })
 
     }
 
@@ -65,7 +72,12 @@
             var name = ""
             while (name.trim() == "") {
                 name = prompt("Please provide a valid file name");
+                if (name == null) {
+                disable_loader();
+                return;
             }
+            }
+            
             fetch('/new_file', {
                 method: "POST",
                 headers: {
@@ -80,11 +92,31 @@
                     return response.json()
                 }).then(data => {
                     if (data.result !== 'success') {
-                        alert(data.message);
-                    }
+                        
+                        
+                // Set the output window to the output of the build
+                output_window = document.getElementById("output_window")
+                output_window.style.border = "1px solid red";
+                output_window.innerHTML = "Output: <pre style=\"color: white\">Error\n</pre>";;
+                // Add both the message and the output
+                if (json_data.message) {
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
+                }
+                if (json_data.output) {
+                    output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                }
+                alert(data.message)
+                ;disable_loader();
+            }
+            
+                    
                     else {
                         update_tree(data.tree);
                     }
+                    disable_loader();
+                }).catch(error => {
+                    console.log(error);
+                    alert("An error occurred while creating the file.",error)
                     disable_loader();
                 });
         }
@@ -241,7 +273,7 @@
                     } else {
                         // Set the output window to the output of the build
                         output_window = document.getElementById("output_window")
-                        output_window.innerHTML = "\n<pre style=\"color: white; font-size: 20\">Error: Make sure you build your project first, and assign correct pins in config.toml. See the bottom of the output below for more information</pre><hr />";
+                        output_window.innerHTML = "\n<pre style=\"color: white; font-size: 20\">Error: Make sure you build your project first, and assign correct pins in config.toml.\nSee the bottom of the output below for more information</pre><hr />";
                         output_window.style.border = "1px solid red";
 
                         // Add both the message and the output
@@ -321,10 +353,10 @@
                     // TODO: change color of border based on json response
                     
                     disable_loader();
-                }), error => {
+                }).catch(error => {
                     console.log(error);
                     disable_loader();
-                };
+                });
         } else {
             alert("Please select a file to synthesize from the directory tree");
         }
@@ -483,10 +515,10 @@
                         output_window.innerHTML = "Output: <pre style=\"color: white\">No errors!</pre>";
                     }
                     disable_loader();
-                }), error => {
+                }).catch(error =>{
                     console.log(error);
                     disable_loader();
-                };
+                });
         } else {
             alert("Please select a file to analyze from the directory tree");
         }
@@ -955,18 +987,7 @@
                 toggled_dir.click();
             }
         }
-        function get_and_update_tree() {
-            // Fetch the directory tree data from the server and render it
-            fetch('/get_tree')  // Replace '/tree' with the URL of the server endpoint that returns the tree data
-                .then(response => response.json())
-                .then(tree => {
-                    update_tree(tree);
-                })
-                .catch(error => {
-                    console.error(error);
-                    // Handle error
-                });
-        }
+       
 
     </script>
     <!-- Script that allows us to validate TOML on button press -->
