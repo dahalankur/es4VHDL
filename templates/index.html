@@ -40,10 +40,10 @@
                 // Set the output window to the output of the build
                 output_window = document.getElementById("output_window")
                 output_window.style.border = "1px solid red";
-                output_window.innerHTML = '';
+                output_window.innerHTML = "Output: <pre style=\"color: white\">Error\n</pre>";;
                 // Add both the message and the output
                 if (json_data.message) {
-                    output_window.innerHTML = "Output: <pre style=\"color: white\">Error: " + json_data.message + "</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>";
                 }
                 if (json_data.output) {
                     output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
@@ -315,7 +315,7 @@
                         output_window.style.border = "1px solid green";
                     }
                     else {
-                        output_window.innerHTML = `Output: <pre style="color: white">` + json.output + "</pre>" // TODO: change this, and handle errors
+                        output_window.innerHTML = `Output: <pre style="color: white">Error\n` + json.output + "</pre>" // TODO: change this, and handle errors
                         output_window.style.border = "1px solid red";
                     }
                     // TODO: change color of border based on json response
@@ -346,7 +346,8 @@
                     output_window.innerHTML = "Output: <pre style=\"color: white\">Config file syntax correct</pre>";
                 } else {
                     output_window.style.border = "1px solid #808000";
-                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + warnings + "</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">Config file syntax is correct\n</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: yellow\">" + warnings + "</pre>";
                 }
             } catch (err) {
                 if (err.line && err.column) {
@@ -355,7 +356,7 @@
                 else {
                     error_message = err;
                 }
-                output_window.innerHTML = `Output: <pre style="color: white">` + error_message + "</pre>"
+                output_window.innerHTML = `Output: <pre style="color: white"> Error\n` + error_message + "</pre>"
                 output_window.style.border = "1px solid red";
 
             }
@@ -445,12 +446,12 @@
                     // Update the output window
                     output_window = document.getElementById("output_window")
                     output_window.style.border = "1px solid green";
-                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.output + "</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: white\"> Build success\n" + json_data.output + "</pre>";
                 } else {
                     output_window = document.getElementById("output_window")
                     output_window.style.border = "1px solid red";
                     // Add both the message and the output
-                    output_window.innerHTML = "Output: <pre style=\"color: white\">" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
+                    output_window.innerHTML = "Output: <pre style=\"color: white\">Error\n" + json_data.message + "</pre>" + "<pre style=\"color: white\">" + json_data.output + "</pre>";
                 }
                 disable_loader();
             }).catch(error => {
@@ -475,7 +476,7 @@
                 .then(json => {
                     output_window = document.getElementById("output_window")
                     if (json.output.trim() != "" && !json.success) {
-                        output_window.innerHTML = `Output: <pre style="color: white">` + json.output + "</pre>"
+                        output_window.innerHTML = `Output: <pre style="color: white">Error\n` + json.output + "</pre>"
                         output_window.style.border = "1px solid red";
                     } else {
                         output_window.style.border = "1px solid green";
