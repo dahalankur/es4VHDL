@@ -347,6 +347,9 @@ def analyze_ghdl_file(user):
 
 
 def perform_synthesis(user, to_synthesize):
+
+    path = os.path.expanduser(f'/h/{user}/.es4/')
+
     # TODO: use sbell's netlist template (add stuff to static later, look at his vhdlweb repo for details)
     if not os.path.exists(path=to_synthesize):
         app.logger.error(f"{user}: File {to_synthesize} does not exist")
@@ -377,7 +380,8 @@ def perform_synthesis(user, to_synthesize):
 
         data = {
             "output" : output,
-            "success" : build_success
+            "success" : build_success,
+            "tree" : make_tree(path)
         }
         app.logger.info(f"{user}: Ran synthesis script on file {to_synthesize}")
     except Exception as error:

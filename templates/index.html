@@ -283,9 +283,9 @@
                         if (json_data.output) {
                             output_window.innerHTML += "<pre style=\"color: white\">" + json_data.output + "</pre>";
                         }
-                        disable_loader();
                     }
-
+                    
+                    disable_loader();
                 }).catch(error => {
                     alert("Internal Server Error: " + error);
                     disable_loader();
@@ -342,7 +342,8 @@
                 .then(function (response) { return response.json(); })
                 .then(json => {
                     output_window = document.getElementById("output_window")
-                    if (json.success === "build_success") {
+                    if (json.success) {
+                        update_tree(json.tree);
                         output_window.innerHTML = `Output: <pre style="color: white"> Success\n` + json.output + "</pre>" // TODO: change this, 
                         output_window.style.border = "1px solid green";
                     }
