@@ -86,9 +86,7 @@ def make_tree(path):
 @htpasswd.required
 def delete_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
-    # to_delete = request.args.get('filename')
     to_delete = request.json['filename']
-    print(to_delete)
     if os.path.exists(path=to_delete):
         if not os.path.isfile(path=to_delete):
             err_msg = f"{user}: Cannot delete non-file {to_delete}"
@@ -107,12 +105,10 @@ def delete_file(user):
                             "result": 'fail',
                              "message": message })
     else:
-        # TODO: send message to frontend about file not existing
         app.logger.error(f"{user}: File {to_delete} does not exist")
         return jsonify({ "tree": make_tree(path), 
                          "result": 'fail', 
                          "message": f'File {to_delete} does not exist'})
-    print('returning result: success')
     return jsonify({ "tree": make_tree(path), 
                     "result": 'success', 
                     "message": '' })
@@ -294,10 +290,8 @@ def get_zipped_folder(user):
 @app.route('/save_file', methods=["POST"])
 @htpasswd.required
 def save_file(user):
-    print('User in save file', user)
     path = os.path.expanduser(f'/h/{user}/.es4/')
     body = request.json
-    print(body)
     filename = body["current_file"]
     # Write the data to the file
     try:
@@ -413,11 +407,9 @@ def generate_bin(user):
         
         script_dir = os.path.dirname(os.path.realpath(__file__))
         output = safe_run([f"{script_dir}/bin/generate_bin.sh", f'{directory}/{toplevel}'], cwd=os.path.dirname(directory),timeout=30).decode("utf-8")
-        # print(script_dir, output, toplevel, directory) # TODO: log here
         bitstream = Path(toplevel).stem  +  ".bin"
         build_success = "Info: Program finished normally." in output
         app.logger.info(f"{user}: Generated bitstream for project {directory}")
-        print('success sent')
         return jsonify({
             "output" : output,
             "success" : build_success,
@@ -443,137 +435,6 @@ def generate_bin(user):
 def build(user):
     directory = request.json['directory']
     return build_full_project(user, directory)
-    # print('User in build1: ', user)
-    # time.sleep(2)
-    # print('User in build2: ', user)
-    # path = os.path.expanduser(f'/h/{user}/.es4/')
-    
-    # makefile_path = f'{directory}/Makefile'
-    
-    # # generate Makefile based on config.toml
-    # makefile = generate_makefile(user, f'{directory}/config.toml')
-    # if makefile == "":
-    #     app.logger.error(f"{user}: Error getting makefile contents from config.toml")
-    #     return jsonify({
-    #         "output" : '',
-    #         "success" : False,
-    #         "tree": '',
-    #         "message": "Error getting makefile contents from config.toml",
-    #     })
-    
-    # try:
-    #     with open(makefile_path, "w") as f: f.write(makefile)
-    # except Exception as error:
-    #     message = f'Error writing Makefile contents to {makefile_path}'
-    #     app.logger.error(f"{user}: Error writing Makefile contents to {makefile_path} -> ", error)
-    #     return jsonify({
-    #         "output" : output,
-    #         "success" : False,
-    #         "tree": '',
-    #         "message": message,
-    #     })
-        
-    # # generate pin constraints file based on config.toml
-    # pin_constraints = generate_pinconstraint(user, f'{directory}/config.toml')
-    # if pin_constraints == "":
-    #     app.logger.warning(f"{user}: Error getting pin constraints from config.toml")
-
-    # output = ""
-
-    # try:
-    #     with open(f'{directory}/pin_constraints.pcf', "w") as f: f.write(pin_constraints)
-        
-    #     output = safe_run(['make', '-j', f'--directory={directory}'], cwd=os.path.dirname(directory) + "/" + os.path.basename(directory), timeout=5).decode("utf-8")
-
-    #     success = False
-    #     if "Build successful" in output:
-    #         success = True
-
-    #     os.chmod(path=makefile_path, mode=0o660)
-    #     app.logger.info(f"{user}: Ran make on project {directory}")
-
-    #     # -------- back up begins here --------
-    #     script_dir = os.path.dirname(os.path.realpath(__file__))
-
-    #     # create a user-specific backup directory if it doesn't exist
-    #     backup_dir = f'{script_dir}/.backup/{user}'
-    #     if not os.path.exists(backup_dir):
-    #         os.makedirs(backup_dir)
-    #         os.chmod(backup_dir, mode=0o2770)
-    #         shutil.chown(backup_dir, user=None, group='es4vhdl-admin')
-        
-    #     # create a project-specific backup directory if it doesn't exist
-    #     project_backup_dir = f'{backup_dir}/{os.path.basename(directory)}'
-    #     if not os.path.exists(project_backup_dir):
-    #         os.makedirs(project_backup_dir)
-    #         os.chmod(project_backup_dir, mode=0o2770)
-    #         shutil.chown(backup_dir, user=None, group='es4vhdl-admin')
-
-    #     curr_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    #     shutil.copytree(directory, f'{project_backup_dir}/{curr_time}')
-
-    #     # -------- back up ends here --------
-
-    # except Exception as error:
-    #     message = f'Error building project {directory}'
-    #     app.logger.error(f"{user}: {message}")
-    #     return jsonify({'result': 'error',
-    #                     'tree': '',
-    #                     'output': output,
-    #                     'message': message
-    #     })
-    # # from config.toml, get the toplevel module
-    # toplevel = ""
-    # try:
-    #     with open(f'{directory}/config.toml', 'r') as f:
-    #         config = toml.load(f)
-    #         toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
-
-    #     # after build is complete, synthesize the top module
-    #     if success and toplevel != "":
-    #         out = json.loads(perform_synthesis(user, directory + "/" + toplevel).data)
-    #         if (not out['success']):
-    #             message = f'Cannot synthesize netlist for project {directory}'
-    #             app.logger.error(f"{user}: {message}")
-    #             return jsonify({'result': 'error',
-    #                             'tree': '',
-    #                             'output': output,
-    #                             'message': message
-    #             })
-            
-
-    #     else:
-    #         message = f"Error performing synthesis on top module {toplevel}"
-    #         app.logger.error(f"{user}: {message}")
-            
-    #         return jsonify({'result': 'error',
-    #                         'tree': '',
-    #                         'output': output,
-    #                         'message': message
-    #         })
-    #     # fix permissions
-    #     for file in os.listdir(directory): 
-    #         # directory
-    #         if os.path.isdir(os.path.join(directory, file)):
-    #             os.chmod(path=os.path.join(directory, file), mode=0o2775)
-    #         else:
-    #             os.chmod(path=os.path.join(directory, file), mode=0o660)
-    # except Exception as error:
-    #     message = f"Error performing synthesis on top module {toplevel} and/or changing permissions"
-    #     app.logger.error(f"{user}: {message} -> ", error)
-    #     return jsonify({'result': 'error',
-    #                     'tree': '',
-    #                     'output': output,
-    #                     'message': message
-    #     })
-
-    # app.logger.info(f"{user}: Ran build script on {directory}")
-    # return jsonify({'result': 'success',
-    #                 'tree': make_tree(path),
-    #                 'output': output,
-    #                 'message': ''    
-    # })
 
 def build_full_project(user, directory):
     time.sleep(1)
