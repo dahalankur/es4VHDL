@@ -10,9 +10,6 @@ from build_files import safe_run
 from flask import Flask, render_template, request, flash, redirect, send_from_directory, url_for, jsonify, send_file
 from flask_htpasswd import HtPasswdAuth
 
-# TODO: vulnerability: if the user sends some other path in one of the GET requests, we will currently run the command for another user. We do not want this, so we want 
-# to check that the path being provided is a subdirectory of the user's home directory.
-
 #  --------- LOGGING INFO -----------
 
 # @app.route('/')
@@ -44,9 +41,7 @@ Welcome to ES4 VHDL online editor!
 Begin by creating a new project, or selecting an existing one!
 
 '''
-# TODO: add a link to help/documentation page in default_msg
 
-# TODO: create a separate config file for all flask configs
 app = Flask(__name__)
 # TODO: change this later; use a config file to store all flask config secrets
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -71,7 +66,7 @@ def make_tree(path):
     tree = dict(name=os.path.basename(path), children=[], path="", dirname=path)
     try: lst = os.listdir(path)
     except OSError:
-        pass # ignore errors TODO: not the very best practice is it? :)
+        pass
     else:
         for name in lst:
             fn = os.path.join(path, name)
@@ -123,7 +118,6 @@ def delete_folder(user):
         if not os.path.isdir(to_delete):
             err_msg = f"{user}: Cannot delete non-folder {to_delete}"
             app.logger.error(err_msg)
-            # TODO: send message to frontend about folder not being able to be deleted
             return jsonify({ "tree": make_tree(path),
                              "result": 'fail', 
                              "message": err_msg })
@@ -133,9 +127,7 @@ def delete_folder(user):
             app.logger.info(f"{user}: Deleted folder {to_delete}")
         except Exception as error:
             app.logger.error(f"{user}: Error deleting folder {to_delete} -> ", error)
-            # TODO: send to frontend
     else:
-        # TODO: send message to frontend about folder not existing. we sent this but frontend does not reciprocate
         app.logger.error(f"{user}: Folder {to_delete} does not exist")
         return jsonify({ "tree": make_tree(path), "result": 'fail', "message": f'Folder {to_delete} does not exist' })
     return jsonify({ "tree": make_tree(path), "result": 'success', "message": '' })
@@ -174,15 +166,11 @@ src       = []   # List all vhd files you need to build your project
             return jsonify({ "tree": "",
                     "result": 'fail', 
                     "message": f"Error creating project and/or changing permissions -> " + error})
-                    
-            # TODO: send this to frontend
     else:
         app.logger.error(f"{user}: Project {projname} already exists")
         return jsonify({ "tree": "",
                     "result": 'fail', 
                     "message": f"Project {projname} already exists"})
-                    
-        # TODO: send this to frontend
     return jsonify({ "tree": make_tree(path), 
                     "result": 'success', 
                     "message": '' })
@@ -201,7 +189,6 @@ def new_file(user):
         if os.path.exists(path=filename):
             error_msg = f"File {filename} already exists"
             app.logger.error(f"{user}: {error_msg}")
-            # TODO: send to frontend
             return jsonify({"contents" : error_msg, 
                             "result": 'fail',
                               "message": error_msg})
@@ -265,8 +252,6 @@ def get_binary_file(user):
         return send_file(filename, as_attachment=True)
     except Exception as error:
         app.logger.error(f"{user}: Error opening file {filename} -> ", error)
-        # TODO: send to frontend
-    # get only the file name
     return jsonify({"content": ""})
 
 @app.route('/get_zipped_folder', methods=["GET"])
@@ -300,9 +285,7 @@ def save_file(user):
         app.logger.info(f"{user}: Saved data to {filename}")
     except Exception as error:
         app.logger.error(f"{user}: Error saving file {filename} -> ", error)
-        # TODO: send to frontend
     return jsonify({"contents": "Saved file", "success" : True})
-#    return render_template('index.html', tree=make_tree(path), file_contents=default_msg), 200
 
 
 '''
@@ -315,7 +298,6 @@ def analyze_ghdl_file(user):
     to_analyze = request.args.get('filename')
     if not os.path.exists(path=to_analyze):
         app.logger.error(f"{user}: File {to_analyze} does not exist")
-        # TODO: send to frontend
         return redirect(url_for('index'))
 
     data = {"output" : "", "success" : False}
@@ -335,7 +317,6 @@ def analyze_ghdl_file(user):
         app.logger.info(f"{user}: Ran analysis on file {to_analyze}")
     except Exception as error:
         app.logger.error(f"{user}: Error analyzing file {to_analyze} -> ", error)
-        # TODO: send to frontend
     
     return jsonify(data)
 
@@ -343,15 +324,10 @@ def analyze_ghdl_file(user):
 def perform_synthesis(user, to_synthesize):
 
     path = os.path.expanduser(f'/h/{user}/.es4/')
-
-    # TODO: use sbell's netlist template (add stuff to static later, look at his vhdlweb repo for details)
     if not os.path.exists(path=to_synthesize):
         app.logger.error(f"{user}: File {to_synthesize} does not exist")
-        # TODO: send to frontend
         return redirect(url_for('index'))
-
     data = {"output" : "", "success" : False}
-
     try:
         # remove work-obj08.cf if it exists
         if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), "work-obj08.cf")):
@@ -360,7 +336,6 @@ def perform_synthesis(user, to_synthesize):
         # remove an svg file if it exists
         if os.path.exists(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg")):
             os.remove(path=os.path.join(os.path.dirname(to_synthesize), f"{to_synthesize}-netlist.svg"))
-            
 
         # call synthesize.sh script with the filename as an argument
         # get python script directory
@@ -380,14 +355,13 @@ def perform_synthesis(user, to_synthesize):
         app.logger.info(f"{user}: Ran synthesis script on file {to_synthesize}")
     except Exception as error:
         app.logger.error(f"{user}: Error synthesizing file {to_synthesize} -> ", error)
-        # TODO: send to frontend
     return jsonify(data)
 
 
 @app.route('/synthesize_file', methods=['GET'])
 @htpasswd.required
 def synthesize_file(user):
-    return perform_synthesis(user, request.args.get('filename')) # TODO: evaluate the "success" status in the frontend
+    return perform_synthesis(user, request.args.get('filename'))
 
 import time
 @app.route("/generate_bin", methods=['POST'])
@@ -586,7 +560,6 @@ def generate_pinconstraint(user, config):
                 pins_str += f"set_io {varName} {pinNumber}\n"
             app.logger.info(f"{user}: Generated pin constraints from config: {config}")
         except Exception as error:
-            # TODO: send to frontend
             app.logger.error(f"{user}: Error generating pin constraints from config: {config} -> ", error)
             return ""
         return pins_str
@@ -629,10 +602,7 @@ all:
 """
         except Exception as error:
             app.logger.error(f"{user}: Error generating Makefile from config: {config} -> ", error)
-            # TODO: send to backend
             return ""
-
-# TODO: use safe_run for synthesis and build and other external calls
 
 # Serves the image for edit icon
 @app.route('/images/edit-icon.png', methods=['GET'])
