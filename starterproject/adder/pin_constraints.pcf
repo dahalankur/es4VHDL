@@ -1,0 +1,5 @@
+set_io A 26
+set_io B 35
+set_io Cin 32
+set_io S 25
+set_io Cout 38

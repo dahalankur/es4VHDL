@@ -192,7 +192,7 @@ src       = []   # List all vhd files you need to build your project
 def new_file(user):
     path = os.path.expanduser(f'/h/{user}/.es4/')
     body = request.json
-    current_dir= body['current_dir']
+    current_dir = body['current_dir']
     filename = current_dir + "/" + body['filename']
 
     response = {"contents" : "", "success" : False}
@@ -522,6 +522,7 @@ def build_full_project(user, directory):
             toplevel = config['toplevel'] if config['toplevel'].endswith('.vhd') else config['toplevel'] + '.vhd'
 
         # after build is complete, synthesize the top module
+
         if success and toplevel != "":
             out = json.loads(perform_synthesis(user, directory + "/" + toplevel).data)
             if (not out['success']):
@@ -543,13 +544,15 @@ def build_full_project(user, directory):
                             'output': output,
                             'message': message
             })
+
         # fix permissions
-        for file in os.listdir(directory): 
-            # directory
-            if os.path.isdir(os.path.join(directory, file)):
-                os.chmod(path=os.path.join(directory, file), mode=0o2775)
-            else:
-                os.chmod(path=os.path.join(directory, file), mode=0o660)
+        if not directory.endswith('adder'): # skip the sample project
+            for file in os.listdir(directory): 
+                # directory
+                if os.path.isdir(os.path.join(directory, file)):
+                    os.chmod(path=os.path.join(directory, file), mode=0o2775)
+                else:
+                    os.chmod(path=os.path.join(directory, file), mode=0o660)
     except Exception as error:
         message = f"Error performing synthesis on top module {toplevel} and/or changing permissions"
         app.logger.error(f"{user}: {message} -> ", error)

@@ -1,0 +1,56 @@
+project = "adder"
+toplevel  = "adder"   # Place your toplevel entity here
+testbench = ""        # (Optional) Place the name of your test bench here
+src       = ["adder.vhd"]   # List all vhd files you need to build your project 
+
+# List your variable to FPGA pin-mappings here
+[pins]
+ A = 26
+ B = 35
+ Cin = 32
+ S = 25
+ Cout = 38
+
+# ----------------------------- EXAMPLE ----------------------------- #
+# Every config.toml file comes with a general section (that contains details 
+# about the source files and toplevel entity in the project), and the 
+# pins section (which contains the pin assignments i.e., variable -> pin 
+# mapping on the FPGA).
+#
+# In the general section, there are four declarations:
+# project - the name of the project
+# toplevel - the name of the toplevel entity
+# testbench - the name of the entity containing the testbench for the project (this is optional)
+# src - a list of VHDL source files in the project 
+#
+# For example, if you have four VHDL source files named "cpu.vhd", "rom.vhd",
+# "ram.vhd", and "top.vhd", your src declaration will look like the following:
+# src = ["top.vhd", "cpu.vhd", "rom.vhd", "ram.vhd"]
+
+# Your toplevel declaration will look like the following, assuming that the 
+# toplevel entity is "top.vhd":
+# toplevel = "top"
+
+# You can name your project anything you like. The following is an example of 
+# a project declaration:
+# project = "Lab 1"
+
+# Finally, we will leave the testbench empty for this example.
+
+# The [pins] section in the config.toml file specifies the variable name to 
+# physical pin mapping on the FPGA. For instance, if you had three variables 
+# A, B, and X in your toplevel entity, the following would be a valid pin 
+# configuration for the project:
+# [pins]
+# A = 26
+# B = 35
+# X = 32
+
+# In this example, the variable A is assigned to the pin 26, B is assigned to 
+# pin 35, and X is assigned to pin 32 respectively.
+
+
+# The mappings from this config file are used to generate automatic Makefile 
+# for your project. A pin_constraints.pcf file is also automatically created 
+# for you on each build, so if you are curious about what the actual 
+# pin constraint file looks like, take a look at pin_constraints.pcf.
