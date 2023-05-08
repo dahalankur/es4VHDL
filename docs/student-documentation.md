@@ -21,18 +21,22 @@ This section is intended to explain how a project would be used, from the perspe
 
 > Requirement: The first time you use the project, make sure to run the installation script on your EECS account (ssh <utln>@homework.cs.tufts.edu). Please run the following command in your home directory on terminal: `wget https://raw.githubusercontent.com/dahalankur/es4VHDL/main/bin/setup.sh && chmod +x setup.sh && ./setup.sh`
 
-1. Make sure you have been added to the es4vhdl group on the file system. Contact your professor or [staff@eecs.tufts.edu](mailto:staff@eecs.tufts.edu) for help with this.
-2. Log into the website using your UTLN and __special password provided by the professor__. This is NOT your typical EECS password. If you do not have this password, please contact your professor.
+1. Login to the website using your UTLN and __special password provided by the professor__. This is NOT your typical EECS password. If you do not have this password, please contact your professor.
     > ![LoginExample](LoginExample.png)
-3. Create a new project button. Use the toggle button "Create Buttons" to show you these options. _To import an existing project, ask help from your professor._
-4. Once you have created a project, you can click on the project name to open the project. This will open the project in the IDE.
-5. Add or Delete files as you need.
-6. Investigate `config.toml` in the project directory. This is where you must specify your configurations for the project, including the toplevel module and GPIO pins.
+2. Create a new project. Use the toggle button "Create Buttons" to show you these options.
+3. Once you have created a new project, it will appear on the left side of your screen in the file tree with a config.toml file
+  3.1 The config.toml file is used to declare the toplevel module, list the source code files, and declare the pin mappings  
+4. You can click on the project name in the file tree to open the project in the IDE
+5. Add or delete source code files as needed for your project
+  5.1 As files are added to the project, they should be listed under the “src” part of the config.toml file
     > ![ConfigExample](ConfigExample.png)
-7. Analyze, Synthesize, and Build your project.
-8. After you have built a project, Generate the Bitstream for the project.
-9. Download the bitstream to your computer. 
-10. Use the FlashToFPGA GUI application to flash the bitstream to your FPGA. This application is [available here](https://github.com/Ellis-Brown/iceprog), and can be downloaded and run on your computer. This application is available for Windows, Mac, and Linux. You can also look into running the command line tool `iceprog` from `icestorm` to flash your FPGA, but this is not recommended.
+6. Analyze files to check for syntactic errors 
+7. Synthesize individual files to check the netlist 
+8. Build your project to generate the Makefile and pin constraints
+  8.1 The config.toml file should be completely filled out by this point
+9. Once the project has been built and you are ready to flash the code to your FPGA, generate the bitstream for the project
+10. Download the bitstream to your computer 
+11. Use the FlashToFPGA GUI application to flash the bitstream to your FPGA. This application is [available here](https://github.com/Ellis-Brown/iceprog), and can be downloaded and run on your computer. This application is available for Windows, Mac, and Linux. 
 
     > FlashToFPGA Icon for application <br />
     > ![FlashToFPGA GUI](FlashToFPGAIcon.png)
