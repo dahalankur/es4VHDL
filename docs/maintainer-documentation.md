@@ -3,11 +3,36 @@
 This explains how the project is structured, and how it is intended to be used and maintained, from an admin perspective. This section is not intended to be a user guide for the project. 
 > For students, please see [Student Documentation](student-documentation.md).
 
+## Table of Contents
+ - [Installation](#installation)
+    - [Web Application Setup](#web-application-setup)
+    - [Student Account Setup](#student-account-seutp-groups-and-passwords)
+    - [How to run the server + view logs](#how-to-run-the-server--view-logs)
+- [How to view snapshots](#how-to-view-snapshots)
+- [Sample Project Documentation](#sample-project-documentation)
+- [System Design](#system-design)
+    - [File System](#file-system)
+    - [Request Handling](#request-handling)
+- [Where to Debug](#where-to-debug)
+    - [Backend Application Code](#backend-application-code)
+    - [Frontend Application Code](#frontend-application-code)
+    - [Flasher GUI application Code](#flasher-gui-application-code)
+
+
 
 ## Installation
 - Clone the repository
+- Read the [Dependencies section](#dependencies) below
 - Follow [Web Application Setup](#web-application-setup)
 
+
+## Dependencies
+This project is intended to be hosted on the Tufts University Electrical Engineering and Computer Science Department's servers. As such, it is currently run in production using following setup
+- Backend enviornment: Red Hat Enterprise Linux
+- Every user is expected to have a user account on the server
+    - accounts are in the form `/h/USERNAME`
+        - `/h/ebrown26` for example, where ebrown26 is the student UTLN.
+- Every user has run the [installation script](bin/setup.sh) before using the web IDE
 
 ### Web Application Setup
 There are some steps to be taken in the beginning of the semester to set up the web application. These steps are explained in this section. Firstly, the repository where the web application resides is es4VHDL. Once you have this repository cloned in a directory on the Halligan servers, there are some steps you need to take in order to ensure every file that we need is present. Go to the bin/ directory and delete fpga-toolchain, as we will need a fresh version of the toolchain with all the binaries present. Go to this website to get the latest version of the toolchain: https://github.com/YosysHQ/fpga-toolchain/releases/tag/nightly-20211006. Copy the link for the nightly version of linux, and download it to es4vhdl/bin.
@@ -41,7 +66,7 @@ Once this is done, you can send the students their credentials and instructions 
 ### How to run the server + view logs
 To run the server, go to the root directory where the repository is located and simply execute the run_server script. All logs are automatically piped to the err.log file in the same directory. The logs are prepended by the username of the student, the timestamp, and the log level (INFO, ERROR, or WARNING). The web app runs using gunicorn on port 8080 by default, but this can be changed in the run_server script.
 
-### How to view snapshots
+## How to view snapshots
 On every build, a “snapshot” of the student’s current project is taken by the web application and copied to a hidden directory in the root directory of the repository. This directory is called .backup/. It stores timestamped project directories for all students. An example structure of a .backup directory is shown below:
 ![backups](images/backups.png)
 
@@ -61,24 +86,16 @@ where this folder should sit
 - Once this is done, go to setup.sh and change the server_project_dir to point to the adder directory in your public_html folder. That should do it for setting up the sample project! Finally, the setup.sh script can be run by the students to set up their environment.
 
 
-### Dependencies
-This project is intended to be hosted on the Tufts University Electrical Engineering and Computer Science Department's servers. As such, it is currently run in production using following setup
-- Backend enviornment: Red Hat Enterprise Linux
-- Every user is expected to have a user account on the server
-    - accounts are in the form `/h/USERNAME`
-        - `/h/ebrown26` for example, where ebrown26 is the student UTLN.
-- Every user has run the [installation script](bin/setup.sh) before using the web IDE
 
-
-### System Design
+## System Design
 ![SystemArchitecture](images/SystemArchitecture.png)
-#### File Layout
+### File Layout
 - Frontend: HTML/CSS and Javascript. Found in [templates/index.html](templates/index.html) and [templates/layout.html](templates/layout.html).
 - Backend: Flask server, found in [app.py](app.py)
     - Server is started by running `./run_server`, which can be found in [run_server](run_server). Make sure to make this script executable by first typing `chmod +x run_server`
 - Database: None. The backend is the Tufts University EECS servers, which are used to store the user's files. If you were running this project outside of that enviornment, it is recommended you use a blobstore to store the user's files. See [Dependencies](#Dependencies) for more information on the EECS servers.
 
-#### Request Handling
+### Request Handling
 The frontend does `fetch()` requests to the backend for all resources, to save files, and open files. The backend processes these files directly on the file system, then serves them to the frontend. The frontend then renders the files as needed.
 
 
@@ -140,6 +157,5 @@ The GUI works by bundling iceprog with a simple GUI wrapper.
 > Note: There is also a command line script to help students install the iceprog binaries locally, then run from the command line without the GUI tool. It is not officially supported. However, this accounts for the other files in the repository, and it is recommended that these files are not deleted. 
 
 > Note: The flasher GUI does not successfully stream data live from iceprog to the GUI, and will only show your output after flashing is fully complete or fails. A fix was attempted, but it was deemed not worthy of solving at this time.
-
 
 
