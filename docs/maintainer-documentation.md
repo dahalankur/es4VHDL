@@ -81,3 +81,65 @@ This project is intended to be hosted on the Tufts University Electrical Enginee
 #### Request Handling
 The frontend does `fetch()` requests to the backend for all resources, to save files, and open files. The backend processes these files directly on the file system, then serves them to the frontend. The frontend then renders the files as needed.
 
+
+## Where to Debug
+Where to debug code (explanation of each of our files)
+The following file paths are in reference to the code found in https://github.com/dahalankur/es4VHDL. 
+### Backend Application Code
+You can configure how all frontend requests are handled, such as saving a file, building a project, and generating the Makefile.
+
+[app.py](../app.py)
+- This is where changes should be made to the server side code, as necessary
+holds all backend routes
+- Basic workflow in this file looks like this
+    - Receive request from frontend to a particular route -> process the request given the user and their request -> send a JSON object indicating success/failure and other info back to the frontend -> the frontend then renders the changes
+
+[run_server](../run_server)
+- Begins the backend server. 
+- This should run every time the machine starts up, and should happen on reboot. The system admin should configure this to be a process that begins on launch
+
+`.htpasswd` and [add_user](../bin/add_user)
+- The password hashes for each student is stored in a .htpasswd file in the root directory of the repository. For obvious security reasons, this file is not version controlled and it must only have rw permissions for the user (i.e., chmod 600 .htpasswd).
+- In the beginning of the semester, generate random passwords for each user enrolled in the class. It must be noted that the username must be their UTLN. To add the password hash to the aforementioned .htpasswd file, use the add_user script, supplying the username as the first command line argument. An example of adding a password for the user “test123” is shown below:
+![add user example](images/add_user.png)
+> Note: `.htpasswd` is in the `.gitignore` file, so it will not be pushed to the repository. An example of user "ebrown26" with password "hi" hashed is shown below:![htpasswd example](images/htpasswd.png)
+If you inspect the htpasswd file now, you should see an entry for the user `test123` like this: `test123:$apr1$5cy/Fl4o$sRZgwg9pXhIqv29gd4d1t/`
+Repeat this for all students enrolled in the class
+
+[build_files.py](../build_files.py)
+- Exports the safe_run function to run code on the unix machine
+
+[setup.sh](../bin/setup.sh)
+- This is the main script that each student has to run at the beginning of the semester. In short, this sets up the directory for the web application per user, fixes permissions and imports a sample project. It has to be ensured that each student is a member of the es4vhdl unix group on the Halligan servers before running this script.
+
+[Synthesize.sh](../bin/synthesize.sh)
+- Given the path for a VHDL source file, this script generates a netlist in the svg format for the corresponding design. You should not need to ever run this script individually, for the backend will run it when receiving requests to synthesize a file.
+
+### Frontend Application Code
+[static/style.css](../static/style.css)
+- Holds all styles for the text editor website
+
+[templates/layout.html](../templates/layout.html) 
+- Holds the header metadata, and the general content (index.html) rendering. This file, for the most part, can be ignored.
+
+[templates/index.html](../templates/index.html)
+- This is where changes should be made, as necessary, to client side code.
+- Contains all client side code for the text editor. 
+- Pre-builds the student’s file tree using server-side rendering and Jinja2 syntax
+- All updates rebuild the file tree by parsing a returned JSON object
+- Uses AceEditor to actually edit files. More information on Ace Editor can be found on their documentation page.
+- The main code comes from the onClick events of the buttons, and the onClick events of the files in the file tree. All file tree objects will have the class name caret, and can be clicked on. Their onClick events will load the file, or show the dropdown of their sub-trees if they are folders
+    - Nested folders are not tested or intended to be supported
+
+### Flasher GUI application Code 
+All flasher code and pre-built binaries can be found at [https://github.com/Ellis-Brown/iceprog](https://github.com/Ellis-Brown/iceprog).
+The GUI works by bundling iceprog with a simple GUI wrapper. 
+- We used PyInstaller to build the GUI natively on every platform. The command used to run the installation process was `pyinstaller --onefile --icon "vhdl-icon.ico" -w --add-binary "iceprog.exe:." run-gui.py`
+- This assumes you have the app icon in a file called “vhdl-icon.ico” and the iceprog binary in a file called "iceprog.exe"”". This iceprog binary must work on the platform where this command is run to build the GUI tool.
+- The source code for the flasher can be found in [run-gui.py](https://github.com/Ellis-Brown/iceprog/blob/main/run-gui.py)
+> Note: There is also a command line script to help students install the iceprog binaries locally, then run from the command line without the GUI tool. It is not officially supported. However, this accounts for the other files in the repository, and it is recommended that these files are not deleted. 
+
+> Note: The flasher GUI does not successfully stream data live from iceprog to the GUI, and will only show your output after flashing is fully complete or fails. A fix was attempted, but it was deemed not worthy of solving at this time.
+
+
+
