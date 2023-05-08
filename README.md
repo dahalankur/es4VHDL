@@ -38,7 +38,7 @@ This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be a
 
 
 ### Future enhancements
-- It would be ideal to be able to flash code directly to the FPGA from the website. [Lots of endeavors were attempted to solve this problem](#TODO), but we ended unsuccessfully. If one were able to solve this problem, it would be greatly appreciated.
+- It would be ideal to be able to flash code directly to the FPGA from the website. [Lots of endeavors were attempted to solve this problem](#docs/AttempsToFlashLessons), but we ended unsuccessfully. If one were able to solve this problem, it would be greatly appreciated.
 
 - A fully atonomously hosted version of this project would be ideal. Currently, the project is hosted on the Tufts EECS servers, and is not intended to be used outside of that environment. A easy to setup and use version of this website for an individual user, or with user sessions would be great for the open source community.
 
