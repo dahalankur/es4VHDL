@@ -1,0 +1,16 @@
+[projectConfig]
+project  = "project name"
+toplevel = "sevenseg.vhd"
+testbench = "none"
+src = ["seveseg.vhd", "alu.vhd"]
+
+# Arrange the pins here, so that you can see if
+# A_0 =  1
+[pins]
+clk = 1
+A_0 = 2
+A_1 = 2
+B_2 = 3
+"A[0]" = 4
+
+
