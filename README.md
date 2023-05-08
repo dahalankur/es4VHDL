@@ -5,7 +5,7 @@
 Developed by: [Ellis Brown](github.com/Ellis-Brown), [Alina Shah](github.com/gem-gray), [Ankur Dahal](github.com/dahalankur) Fall 2022-Spring 2023.
 
 
-<img src="docs/images/VHDL-code.png" style="all: initial; width: 100%; height: 100%; align-items: center;  align-items: center;
+<img width="500" src="docs/images/VHDL-code.png" style="all: initial;align-items: center;  align-items: center;
   background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
   border: 0;
   border-radius: 8px;
@@ -28,7 +28,7 @@ Developed by: [Ellis Brown](github.com/Ellis-Brown), [Alina Shah](github.com/gem
   cursor: pointer;
 " alt="Web IDE example">
 
-<img alt="Netlist Example" src="docs/images/Netlist.png" style="align-items: center;
+<img width="500" alt="Netlist Example" src="docs/images/Netlist.png" style="align-items: center;
   background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
   border: 0;
   border-radius: 8px;
@@ -50,7 +50,7 @@ Developed by: [Ellis Brown](github.com/Ellis-Brown), [Alina Shah](github.com/gem
   white-space: nowrap;
   cursor: pointer;">
 
-<img alt="Config Example" src="docs/images/CONFIG.png" style="align-items: center;
+<img width="300" alt="Config Example" src="docs/images/CONFIG.png" style="align-items: center;
   background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
   border: 0;
   border-radius: 8px;
@@ -91,6 +91,7 @@ This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be a
 ## Documentation
 - [Student User Documentation](docs/student-documentation.md)
 - [Maintainer Documentation](docs/maintainer-documentation.md)
+- [Attempting to flash directly from website (story)](docs/AttempsToFlashLessons.md)
 
 ### Design Considerations
 - This project was built to circumvent using Lattice Radiant, which[ only is supported on Windows and Linux computers](https://www.latticesemi.com/LatticeRadiant?pr031521) at this time. Lattice Radiant is a featureful design suite for building and analyzing VHDL projects. This WebIDE excells at it's quick setup and ease of use. 
