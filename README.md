@@ -2,9 +2,13 @@
 > Capstone Project, Tufts Universtiy, 2023
 > Sponsor: Professor Steven Bell of the EECS department at Tufts University
 
-![Web IDE](docs/images/HomeScreen.png)
+Developed by: [Ellis Brown](github.com/Ellis-Brown), [Alina Shah](github.com/gem-gray), [Ankur Dahal](github.com/dahalankur) Fall 2022-Spring 2023.
 
-![Netlist Example](docs/images/NetlistExample.png)
+![Web IDE](docs/images/VHDL-code.png)
+
+![Netlist Example](docs/images/Netlist.png)
+
+![Config Example](docs/images/CONFIG.png)
 
 ## Table of contents
 - [Project Description](#project-description)
