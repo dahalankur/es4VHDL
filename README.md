@@ -91,7 +91,7 @@ This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be a
 ## Documentation
 - [Student User Documentation](docs/student-documentation.md)
 - [Maintainer Documentation](docs/maintainer-documentation.md)
-- [Attempting to flash directly from website (story)](docs/AttempsToFlashLessons.md)
+- [Attempting to flash directly from website (story)](docs/AttemptsToFlashLessons.md)
 
 ### Design Considerations
 - This project was built to circumvent using Lattice Radiant, which[ only is supported on Windows and Linux computers](https://www.latticesemi.com/LatticeRadiant?pr031521) at this time. Lattice Radiant is a featureful design suite for building and analyzing VHDL projects. This WebIDE excells at it's quick setup and ease of use. 
