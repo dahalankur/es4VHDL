@@ -1,5 +1,6 @@
 # Student Documentation
-This explains the project from the perspective of a student in ES4 on how to use the Web IDE.
+This explains the project from the perspective of a student in ES4 on how to use the Web IDE. 
+> For maintainer documentation, please see [maintainer documentation](maintainer-documentation.md).
 
 
 ## Table of contents
@@ -22,14 +23,14 @@ This section is intended to explain how a project would be used, from the perspe
 > Requirement: The first time you use the project, make sure to run the installation script on your EECS account (ssh <utln>@homework.cs.tufts.edu). Please run the following command in your home directory on terminal: `wget https://raw.githubusercontent.com/dahalankur/es4VHDL/main/bin/setup.sh && chmod +x setup.sh && ./setup.sh`
 
 1. Login to the website using your UTLN and __special password provided by the professor__. This is NOT your typical EECS password. If you do not have this password, please contact your professor.
-    > ![LoginExample](LoginExample.png)
+    > ![LoginExample](images/LoginExample.png)
 2. Create a new project. Use the toggle button "Create Buttons" to show you these options.
 3. Once you have created a new project, it will appear on the left side of your screen in the file tree with a config.toml file
     - The config.toml file is used to declare the toplevel module, list the source code files, and declare the pin mappings  
 4. You can click on the project name in the file tree to open the project in the IDE
 5. Add or delete source code files as needed for your project
     - As files are added to the project, they should be listed under the “src” part of the config.toml file
-    > ![ConfigExample](ConfigExample.png)
+    > ![ConfigExample](images/ConfigExample.png)
 6. Analyze files to check for syntactic errors 
 7. Synthesize individual files to check the netlist 
 8. Build your project to generate the Makefile and pin constraints
@@ -39,12 +40,12 @@ This section is intended to explain how a project would be used, from the perspe
 11. Use the FlashToFPGA GUI application to flash the bitstream to your FPGA. This application is [available here](https://github.com/Ellis-Brown/iceprog), and can be downloaded and run on your computer. This application is available for Windows, Mac, and Linux. 
 
     > FlashToFPGA Icon for application <br />
-    > ![FlashToFPGA GUI](FlashToFPGAIcon.png)
+    > ![FlashToFPGA GUI](images/FlashToFPGAIcon.png)
 
 
 
 ### Buttons
-![Buttons Image](ButtonsExample.png)
+![Buttons Image](images/ButtonsExample.png)
 The website has many features, so we are going to break them down more clearly by explaining what each button does. 
 
 Show/Hide Options will display or hide 4 buttons: “Show Create Buttons”, “Show Delete Buttons”, “Show Build Buttons”, “Show Other Buttons”. Clicking on those 4 choices will lead to the buttons described below. 

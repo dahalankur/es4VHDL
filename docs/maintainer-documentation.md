@@ -1,6 +1,13 @@
 
-## Project Structure
-This explains how the project is structured, and how it is intended to be used. This section is not intended to be a user guide for the project.
+# Maintainer Documentation
+This explains how the project is structured, and how it is intended to be used and maintained, from an admin perspective. This section is not intended to be a user guide for the project. 
+> For students, please see [Student Documentation](student-documentation.md).
+
+
+## Installation
+- Clone the repository
+- Follow [Web Application Setup](#web-application-setup)
+
 
 ### Web Application Setup
 There are some steps to be taken in the beginning of the semester to set up the web application. These steps are explained in this section. Firstly, the repository where the web application resides is es4VHDL. Once you have this repository cloned in a directory on the Halligan servers, there are some steps you need to take in order to ensure every file that we need is present. Go to the bin/ directory and delete fpga-toolchain, as we will need a fresh version of the toolchain with all the binaries present. Go to this website to get the latest version of the toolchain: https://github.com/YosysHQ/fpga-toolchain/releases/tag/nightly-20211006. Copy the link for the nightly version of linux, and download it to es4vhdl/bin.
@@ -62,15 +69,9 @@ This project is intended to be hosted on the Tufts University Electrical Enginee
         - `/h/ebrown26` for example, where ebrown26 is the student UTLN.
 - Every user has run the [installation script](bin/setup.sh) before using the web IDE
 
-## Installation
-This section is intended to be used by the Tufts University EECS admins, not by students. For students, please see [Usage](#Usage)
-
-- Clone the repository
-- Install the needed FPGA toolchains [TODO](#TODO)
-
 
 ### System Design
-![SystemArchitecture](SystemArchitecture.png)
+![SystemArchitecture](images/SystemArchitecture.png)
 #### File Layout
 - Frontend: HTML/CSS and Javascript. Found in [templates/index.html](templates/index.html) and [templates/layout.html](templates/layout.html).
 - Backend: Flask server, found in [app.py](app.py)

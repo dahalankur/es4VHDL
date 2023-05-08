@@ -2,9 +2,9 @@
 > Capstone Project, Tufts Universtiy, 2023
 > Sponsor: Professor Steven Bell of the EECS department at Tufts University
 
-![Web IDE](docs/HomeScreen.png)
+![Web IDE](docs/images/HomeScreen.png)
 
-![Netlist Example](docs/NetlistExample.png)
+![Netlist Example](docs/images/NetlistExample.png)
 
 ## Table of contents
 - [Project Description](#project-description)
@@ -16,9 +16,9 @@
 
 
 ## Project Description
-This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be able to [build projects](#TODO), [Compile their code to bitstreams](#TODO), and [flash their bitstreams to their FPGA](#TODO) all from the comfort of their web browser and a GUI application. This project is built using [Flask](https://flask.palletsprojects.com/en/2.0.x/) for the backend, and vanilla html and javascript for the frontend.
+This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be able to build projects, compile their code to bitstreams, , and flash their bitstreams to their FPGA all from the comfort of their web browser and a GUI application. This project is built using [Flask](https://flask.palletsprojects.com/en/2.0.x/) for the backend, and vanilla html and javascript for the frontend. To begin, please see [Student User Documentation](docs/student-documentation.md) for more information on how to use this website.
 
-> This is intended to be used in combination with ES4 and other related courses at Tufts University which use VHDL and ice40 FPGAs. This is written with assumptions about the enviornment in which it runs. See [Maintainer Documentation](docs/maintainer-documentation.md) for more information.
+> This is intended to be used in combination with ES4 and other related courses at Tufts University which use VHDL and ice40 FPGAs. This is written with assumptions about the enviornment in which it runs. See [Maintainer Documentation](docs/images/maintainer-documentation.md) for more information.
 
 #
 
@@ -47,8 +47,5 @@ This project builds a platform-agnostic web ide for ICE40 FPGAs. Users will be a
 Contributions are welcome, but this repository is infrequently checked. If you would like to contribute, please open an issue or pull request. See [Future Enhancements](#future-enhancements) for ideas on what to contribute.
 
 
-
-## TODO
-IF YOU WERE LINKED HERE, I MESSED UP. PLEASE LET ME KNOW SO I CAN FIX IT.
 
 > Note: This project mentions and depends on a Flasher GUI, which can be on github at [github.com/Ellis-Brown/iceprog](github.com/Ellis-Brown/iceprog).
