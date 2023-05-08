@@ -75,8 +75,10 @@ Developed by: [Ellis Brown](github.com/Ellis-Brown), [Alina Shah](github.com/gem
 ## Table of contents
 - [Project Description](#project-description)
 - [Documentation](#documentation)
-  - [Design Considerations](#design-considerations)
-  - [Future enhancements](#future-enhancements)
+  - [Student User Documentation](docs/student-documentation.md)
+  - [Maintainer Documentation](docs/maintainer-documentation.md)
+- [Design Considerations](#design-considerations)
+- [Future enhancements](#future-enhancements)
 - [Contributing](#contributing)
  
 
