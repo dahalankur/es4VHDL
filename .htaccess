@@ -1,6 +1,0 @@
-AuthName "ES4 VHDL Web IDE Login Authentication"
-AuthType Basic
-AuthBasicProvider ldap
-AuthLDAPURL ldap://ldap.eecs.tufts.edu/ou=people,dc=eecs,dc=tufts,dc=edu?uid
-Require valid-user
-Require group es4vhdl
